@@ -41,7 +41,10 @@
               card: '#FFFFFF',
               dark: '#1F2937',
               gold: '#D4AC0D',
-              border: '#E8E4DF'
+              border: '#E8E4DF',
+              matcha: '#2D6A4F',
+              indigo: '#2B3A67',
+              amber: '#B45309'
             }
           },
           fontFamily: {
@@ -64,6 +67,24 @@
         font-size: 1.15em !important;
         line-height: 1.4 !important;
       }
+    }
+
+    /* 日式印章效果 */
+    .hanko-stamp {
+      border: 1.5px solid #A93226;
+      color: #A93226;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      padding: 1px 6px;
+      border-radius: 4px;
+      transform: rotate(-3deg);
+      display: inline-block;
+      user-select: none;
+    }
+
+    /* 票券邊緣虛線 */
+    .ticket-dashed-border {
+      border-top: 1.5px dashed #E5E7EB;
     }
   </style>
 </head>
@@ -120,9 +141,9 @@
     </header>
 
     <!-- 主內容區域 -->
-    <main class="flex-1 px-4 pt-3.5">
+    <main class="flex-1 px-3.5 pt-3.5">
 
-      <!-- ================= 1. 每日行程表 (純淨卡片無照片) ================= -->
+      <!-- ================= 1. 每日行程表 (鐵道時間軸 + 票券風) ================= -->
       <section v-show="currentTab === 'schedule'">
         <!-- 日期滑動列 -->
         <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-3 pt-0.5">
@@ -140,6 +161,17 @@
             </span>
             <span class="text-lg font-black leading-none mt-1">{{ day.dayNumber }}</span>
           </button>
+        </div>
+
+        <!-- 今日速覽膠囊列 (Today at a Glance) -->
+        <div class="bg-gradient-to-r from-red-50/80 to-amber-50/60 border border-red-100 rounded-xl px-3.5 py-2 mb-3 flex items-center justify-between text-xs text-slate-700 shadow-2xs">
+          <div class="flex items-center gap-1.5 truncate">
+            <span class="w-2 h-2 rounded-full bg-wabi-red shrink-0 animate-pulse"></span>
+            <span class="font-bold truncate">{{ todayGlanceText }}</span>
+          </div>
+          <span class="text-[10px] bg-white/80 border border-red-200 text-wabi-red font-black px-2 py-0.5 rounded-full shrink-0">
+            {{ currentDay?.items?.length || 0 }} 站行程
+          </span>
         </div>
 
         <!-- 每日天氣資訊 -->
@@ -178,8 +210,8 @@
         </div>
 
         <!-- 住宿資訊小卡 -->
-        <div v-if="currentDay?.hotel" class="mb-3.5 bg-red-50/70 border border-red-200/80 rounded-xl p-3 flex items-center justify-between shadow-2xs">
-          <div class="flex items-center gap-2.5 text-xs text-slate-800 font-bold">
+        <div v-if="currentDay?.hotel" class="mb-4 bg-red-50/70 border border-red-200/80 rounded-xl p-3 flex items-center justify-between shadow-2xs">
+          <div class="flex items-center gap-2.5 text-xs text-slate-800 font-bold truncate">
             <app-icon name="bed" class="w-4 h-4 text-wabi-red shrink-0" />
             <span class="truncate">今晚住宿：{{ currentDay.hotel.name }}</span>
           </div>
@@ -188,21 +220,28 @@
           </button>
         </div>
 
-        <!-- 行程卡片清單 (純淨極簡卡片，無任何照片) -->
-        <div class="space-y-3">
-          <div v-for="(item, idx) in (currentDay?.items || [])" :key="item.id" class="space-y-3">
+        <!-- 縱向時間軸容器 (Vertical Timeline Container) -->
+        <div class="relative pl-7 space-y-4">
+          <!-- 貫穿式鐵道軸線 -->
+          <div class="absolute left-3 top-3 bottom-5 w-0.5 bg-gradient-to-b from-wabi-red via-stone-300 to-stone-200"></div>
+
+          <div v-for="(item, idx) in (currentDay?.items || [])" :key="item.id" class="relative">
             
-            <!-- 上下行程間的交通資訊 -->
-            <div v-if="idx > 0" class="flex items-center justify-center gap-3 py-1 text-slate-400 text-xs">
-              <div class="h-px bg-slate-200 flex-1"></div>
-              <div class="flex items-center gap-1.5 bg-white px-3 py-1 rounded-full border border-wabi-border text-slate-600 font-medium shadow-2xs">
-                <app-icon :name="getTransitIcon(item.transitModeIcon)" class="w-3.5 h-3.5 text-wabi-red" />
-                <span>交通約 {{ item.transitTime || '15 分鐘' }}</span>
-              </div>
-              <div class="h-px bg-slate-200 flex-1"></div>
+            <!-- 時間軸節點 (圓圈圖示) -->
+            <div 
+              class="absolute -left-7 top-3.5 w-6 h-6 rounded-full border-2 border-white shadow-xs flex items-center justify-center z-10"
+              :class="timelineDotColor(item.category)"
+            >
+              <app-icon :name="getTransitIcon(item.transitModeIcon)" class="w-3 h-3 text-white" />
             </div>
 
-            <!-- 航班專用卡片 -->
+            <!-- 時間軸上方交通移動標記 -->
+            <div v-if="idx > 0 && item.transitTime" class="text-[11px] text-stone-500 font-medium pb-1.5 flex items-center gap-1.5 pl-1">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-stone-300"></span>
+              <span>交通約 {{ item.transitTime }}</span>
+            </div>
+
+            <!-- 航班專用票卡 -->
             <div 
               v-if="item.category === '航班'" 
               class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md relative border border-slate-700"
@@ -222,14 +261,89 @@
               </div>
             </div>
 
-            <!-- 一般行程卡片 -->
+            <!-- 【票券風卡片】餐廳預約與重要活動 -->
+            <div 
+              v-else-if="item.bookingCode || item.category === '美食'"
+              class="bg-white rounded-2xl p-4 shadow-2xs border border-amber-200/90 relative overflow-hidden"
+              :class="cardLeftAccent(item.category)"
+            >
+              <!-- 頂部：標題與日式判子印章 -->
+              <div class="flex items-start justify-between">
+                <div class="flex items-center gap-2">
+                  <span :class="categoryBadgeColor(item.category)" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {{ item.category }}
+                  </span>
+                  <h3 class="font-black text-slate-800 text-base leading-snug">{{ item.name }}</h3>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <span class="hanko-stamp text-[10px]">予約済</span>
+                  <button @click.stop="openEditModal(item)" class="text-slate-300 hover:text-slate-600 p-1">
+                    <app-icon name="pencil" class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- 時間與基本資訊 -->
+              <div class="mt-2 text-xs text-slate-600 space-y-1">
+                <div v-if="item.hours" class="flex items-center gap-1.5 font-bold text-slate-700">
+                  <app-icon name="clock" class="w-3.5 h-3.5 text-amber-700" />
+                  <span>預訂時間：{{ item.hours }}</span>
+                </div>
+                <div v-if="item.ticket" class="text-amber-800 font-bold">
+                  {{ item.ticket }}
+                </div>
+              </div>
+
+              <!-- 票根虛線分割與預約代號區 -->
+              <div v-if="item.bookingCode" class="mt-3 pt-2.5 ticket-dashed-border flex items-center justify-between">
+                <div class="bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg">
+                  <span class="text-[10px] text-amber-800 font-medium">預約號碼</span>
+                  <div class="font-black text-amber-950 font-mono tracking-wider text-sm">{{ item.bookingCode }}</div>
+                </div>
+                <button 
+                  @click="copyText(item.bookingCode, '預約代號')" 
+                  class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-1.5 rounded-xl transition active:scale-95 flex items-center gap-1 shadow-2xs"
+                >
+                  <app-icon name="copy" class="w-3.5 h-3.5" />
+                  <span>複製號碼</span>
+                </button>
+              </div>
+
+              <!-- 溫馨叮嚀便籤 -->
+              <div v-if="item.notes" class="mt-2.5 bg-amber-50/50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-amber-100/70">
+                <span class="font-bold text-amber-900">🍵 貼心備註：</span>{{ item.notes }}
+              </div>
+
+              <!-- 底部按鈕區：導航 + 複製日文地址給司機 -->
+              <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button 
+                  v-if="item.address" 
+                  @click="copyText(item.address, '日文地址')"
+                  class="flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-stone-100 hover:bg-stone-200 px-2.5 py-1.5 rounded-xl transition"
+                  title="搭計程車時可出示給司機看"
+                >
+                  <app-icon name="copy" class="w-3 h-3" />
+                  <span>司機地址</span>
+                </button>
+                <button 
+                  @click.stop="openGoogleMap(item.mapQuery || item.address || item.name)"
+                  class="flex items-center gap-1.5 text-xs font-bold text-wabi-red hover:text-wabi-darkred bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition"
+                >
+                  <app-icon name="navigation-2" class="w-3.5 h-3.5" />
+                  <span>Google Maps 導航</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 一般景點 / 交通卡片 (精緻和色邊飾) -->
             <div 
               v-else 
               class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border hover:border-wabi-red/40 transition-all relative"
+              :class="cardLeftAccent(item.category)"
             >
               <div class="flex items-start justify-between">
                 <div class="flex items-center gap-2">
-                  <span :class="categoryBadgeColor(item.category)" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                  <span :class="categoryBadgeColor(item.category)" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
                     {{ item.category }}
                   </span>
                   <h3 class="font-bold text-slate-800 text-base leading-snug">{{ item.name }}</h3>
@@ -239,8 +353,8 @@
                 </button>
               </div>
 
-              <!-- 時間與預約/門票資訊 -->
-              <div class="mt-2.5 space-y-1 text-xs text-slate-600">
+              <!-- 時間與門票資訊 -->
+              <div class="mt-2 space-y-1 text-xs text-slate-600">
                 <div v-if="item.hours" class="flex items-center gap-1.5 font-medium">
                   <app-icon name="clock" class="w-3.5 h-3.5 text-slate-400" />
                   <span>時間：{{ item.hours }}</span>
@@ -251,28 +365,22 @@
                 </div>
               </div>
 
-              <!-- 餐廳預約代號「一鍵複製」 -->
-              <div v-if="item.bookingCode" class="mt-2.5 p-2 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between">
-                <div class="text-xs">
-                  <span class="text-slate-500 font-medium">預約代號：</span>
-                  <span class="font-black text-amber-900 tracking-wider ml-1">{{ item.bookingCode }}</span>
-                </div>
+              <!-- 溫馨叮嚀便籤 -->
+              <div v-if="item.notes" class="mt-2.5 bg-stone-50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-stone-100">
+                <span class="font-bold text-slate-800">💡 步行動線：</span>{{ item.notes }}
+              </div>
+
+              <!-- 底部按鈕區 -->
+              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button 
-                  @click="copyText(item.bookingCode)" 
-                  class="text-[11px] bg-amber-200/80 hover:bg-amber-300 text-amber-900 font-bold px-2.5 py-1 rounded-lg transition active:scale-95 flex items-center gap-1"
+                  v-if="item.address" 
+                  @click="copyText(item.address, '日文地址')"
+                  class="flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-stone-100 hover:bg-stone-200 px-2.5 py-1.5 rounded-xl transition"
+                  title="搭計程車時可出示給司機看"
                 >
                   <app-icon name="copy" class="w-3 h-3" />
-                  <span>複製代號</span>
+                  <span>司機地址</span>
                 </button>
-              </div>
-
-              <!-- 長輩動線貼心備註 -->
-              <div v-if="item.notes" class="mt-2.5 bg-stone-50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-stone-100">
-                {{ item.notes }}
-              </div>
-
-              <!-- 底部按鈕區：Google Maps 導航 -->
-              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end">
                 <button 
                   @click.stop="openGoogleMap(item.mapQuery || item.address || item.name)"
                   class="flex items-center gap-1.5 text-xs font-bold text-wabi-red hover:text-wabi-darkred bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition"
@@ -631,7 +739,7 @@
       </section>
 
 
-      <!-- ================= 4. 花費記帳 (幣別日幣 JPY 轉 TWD) ================= -->
+      <!-- ================= 4. 花費記帳 ================= -->
       <section v-show="currentTab === 'expenses'" class="space-y-4">
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden">
           <span class="text-xs uppercase font-black text-amber-300 tracking-wider">Total Expenses</span>
@@ -773,8 +881,13 @@
           </div>
 
           <div>
-            <label class="font-bold text-slate-700 block mb-1">門票 / 預約代號</label>
-            <input v-model="modalScheduleForm.ticket" type="text" placeholder="例如：門票 600円、訂位代號" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">門票 / 預約資訊</label>
+            <input v-model="modalScheduleForm.ticket" type="text" placeholder="例如：門票 600円、已預約 6位" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl" />
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">預約代號 (選填)</label>
+            <input v-model="modalScheduleForm.bookingCode" type="text" placeholder="例如：PERQZJ" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-mono uppercase" />
           </div>
 
           <div>
@@ -901,7 +1014,7 @@
   <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
-    // 日本行程完整資料庫（純淨排版）
+    // 行程資料庫 (精緻票券化設定)
     const EMBEDDED_TRIP_DATA = {
       title: "Japan Journey 2026",
       subtitle: "關西・南紀勝浦・京都・東京",
@@ -983,14 +1096,15 @@
               hours: "06:30 - 09:50",
               notes: "抵達關西機場第一航廈。入境後搭乘南海電鐵特急 Rapi:t 前往難波站。",
               address: "関西国際空港 第1ターミナル",
-              mapQuery: "関西国際空港"
+              mapQuery: "関西国際空港",
+              transitModeIcon: "plane"
             },
             {
               id: "d1-hotel-drop",
               category: "住宿",
               name: "MIMARU 大阪心齋橋 CENTRAL 寄存行李",
-              hours: "約 11:45 抵達",
-              notes: "自難波站搭乘計程車約5分鐘抵達飯店，先放行李後輕裝出遊。",
+              hours: "11:45 抵達",
+              notes: "自難波站搭乘計程車約5分鐘抵達飯店。木質極簡大廳，先放行李後輕裝出遊。",
               address: "大阪府大阪市中央区南船場4-11-20",
               mapQuery: "MIMARU 大阪 心斎橋 CENTRAL",
               transitModeIcon: "train",
@@ -1012,8 +1126,8 @@
               id: "d1-dinner",
               category: "美食",
               name: "Yakiniku Ushigoro Umeda (梅田燒肉)",
-              hours: "18:00 - 20:00 (預約完成 / 6位)",
-              ticket: "專人代烤 · 訂位確認",
+              hours: "18:00 - 20:00",
+              ticket: "預約完成 · 6位 (專人代烤)",
               bookingCode: "PERQZJ",
               notes: "建議自飯店搭計程車直達梅田餐廳，避免長輩在梅田地下迷航。",
               address: "大阪府大阪市北区梅田2-2-22",
@@ -1035,20 +1149,20 @@
           items: [
             {
               id: "d2-transit-kuroshio",
-              category: "景點",
+              category: "交通",
               name: "JR 特急黑潮號 (Kuroshio) 景觀鐵道",
               hours: "10:00 - 14:00",
               notes: "從天王寺或新大阪站上車。沿途飽覽和歌山蔚藍太平洋海景，全程舒適安坐。",
               address: "和歌山県東牟婁郡那智勝浦町大字築地６丁目 紀伊勝浦駅",
               mapQuery: "JR 紀伊勝浦駅",
               transitModeIcon: "train",
-              transitTime: "特急列車約 3.5~4 小時"
+              transitTime: "特急約 3.5~4 小時"
             },
             {
               id: "d2-checkin-taoya",
               category: "住宿",
               name: "TAOYA 那智勝浦 辦理入住",
-              hours: "14:30 抵達勝浦站接駁",
+              hours: "14:30 抵達",
               notes: "抵達紀伊勝浦站後搭乘專用接駁車前往飯店，享受全包式溫泉服務。",
               address: "和歌山県東牟婁郡那智勝浦町勝浦216-19",
               mapQuery: "TAOYA 那智勝浦",
@@ -1063,16 +1177,19 @@
               ticket: "房客全包式免費服務",
               notes: "泡湯欣賞勝浦港海灣夕陽，大廳酒廊免費提供生啤酒、軟飲與精緻點心。",
               address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦"
+              mapQuery: "TAOYA 那智勝浦",
+              transitModeIcon: "bed"
             },
             {
               id: "d2-dinner",
               category: "美食",
               name: "飯店海鮮豪華自助晚宴",
               hours: "18:30 - 20:30",
+              ticket: "溫泉晚宴 · 免額外付費",
               notes: "享用在地生黑鮪魚、黑毛和牛與現做海鮮料理，步調放鬆無負擔。",
               address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦"
+              mapQuery: "TAOYA 那智勝浦",
+              transitModeIcon: "calculator"
             }
           ]
         },
@@ -1103,6 +1220,7 @@
               category: "美食",
               name: "勝浦漁港 賑合市場生黑鮪魚午餐",
               hours: "12:30 - 14:00",
+              ticket: "黑鮪魚產地直送名店",
               notes: "品嚐全日本第一「不經冷凍、產地直送」的熟成生黑鮪魚丼飯與定食。",
               address: "和歌山県東牟婁郡那智勝浦町築地7-12",
               mapQuery: "勝浦漁港 にぎわい市場",
@@ -1126,9 +1244,11 @@
               category: "美食",
               name: "TAOYA 精緻溫泉百匯晚宴",
               hours: "18:30",
+              ticket: "溫泉晚宴",
               notes: "返回飯店泡湯放鬆並享用豐盛晚餐。",
               address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦"
+              mapQuery: "TAOYA 那智勝浦",
+              transitModeIcon: "calculator"
             }
           ]
         },
@@ -1144,7 +1264,7 @@
           items: [
             {
               id: "d4-transit-kyoto",
-              category: "景點",
+              category: "交通",
               name: "JR 特急黑潮號前往古都京都",
               hours: "10:00 - 14:00",
               notes: "紀伊勝浦站出發，安坐車廂內欣賞海岸與鄉村風景，直抵京都站。",
@@ -1181,11 +1301,13 @@
               category: "美食",
               name: "中島家 Kyoto (預約確認 / 6位)",
               hours: "18:30 - 20:30",
+              ticket: "預約確認 · 6位 (京都和風料理)",
+              bookingCode: "NAKAJIMA",
               notes: "京都地道精緻家常菜與和風割烹居酒料理，環境舒適雅緻。",
               address: "京都府京都市下京区仏光寺通烏丸東入上柳町315-4",
               mapQuery: "中島家 京都",
               transitModeIcon: "car",
-              transitTime: "步行或短程計程車即達"
+              transitTime: "短程計程車即達"
             }
           ]
         },
@@ -1201,14 +1323,15 @@
           items: [
             {
               id: "d5-charter-start",
-              category: "景點",
-              name: "海之京都 全日專車包車出發",
-              hours: "08:00 飯店大廳集合",
+              category: "交通",
+              name: "海之京都 全日專屬包車出發",
+              hours: "08:00 集合",
+              ticket: "全日專屬專車 · 免轉車奔波",
               notes: "今日全程專屬包車直達天橋立與伊根，長輩免舟車勞頓與轉車之苦。",
               address: "京都府京都市下京区西石垣通五条下る平居町17-1",
               mapQuery: "MIMARU京都 河原町五条",
               transitModeIcon: "car",
-              transitTime: "專車前往宮津天橋立約 100 分鐘"
+              transitTime: "專車前往宮津約 100 分鐘"
             },
             {
               id: "d5-amanohashidate",
@@ -1227,9 +1350,11 @@
               category: "美食",
               name: "宮津灣海鮮名物午餐",
               hours: "12:00 - 13:00",
+              ticket: "丹後新鮮漁獲定食",
               notes: "品嚐丹後若狹灣新鮮海鮮丼、烤魚定食。",
               address: "京都府宮津市文珠 天橋立桟橋周辺",
-              mapQuery: "天橋立桟橋"
+              mapQuery: "天橋立桟橋",
+              transitModeIcon: "calculator"
             },
             {
               id: "d5-ine-cruise",
@@ -1241,13 +1366,15 @@
               address: "京都府与謝郡伊根町日出11 伊根湾めぐり遊覧船",
               mapQuery: "伊根湾めぐり遊覧船のりば",
               transitModeIcon: "sailboat",
-              transitTime: "包車驅車約 30 分鐘抵達伊根"
+              transitTime: "包車車程約 30 分鐘"
             },
             {
               id: "d5-dinner",
               category: "美食",
               name: "Lugol Kyoto (預約確認 / 4+2位)",
               hours: "19:00 - 21:00",
+              ticket: "預約確認 · 4+2位 (餐酒館)",
+              bookingCode: "LUGOL",
               notes: "專車約 17:30 返回京都飯店休整，晚間前往精緻餐酒館 Lugol 享用晚餐。",
               address: "京都府京都市中京区烏丸通蛸薬師西入る橋弁慶町222",
               mapQuery: "Lugol Kyoto",
@@ -1268,9 +1395,10 @@
           items: [
             {
               id: "d6-shinkansen",
-              category: "景點",
+              category: "交通",
               name: "東海道新幹線 Nozomi 前往東京",
               hours: "10:00 - 12:15",
+              ticket: "新幹線指定席 · 2h 15m",
               notes: "京都站搭乘新幹線直達東京站，平穩疾馳約 2 小時 15 分，車上享受鐵道便當與熱咖啡。",
               address: "東京都千代田区丸の内１丁目 東京駅",
               mapQuery: "JR 東京駅",
@@ -1281,7 +1409,7 @@
               id: "d6-hotel-tokyo",
               category: "住宿",
               name: "銀座格蘭巴哈酒店 入住寄放行李",
-              hours: "12:45 抵達飯店",
+              hours: "12:45 抵達",
               notes: "東京站搭計程車5分鐘即達飯店。環境雅緻清幽，周邊生活機能極佳。",
               address: "東京都中央区銀座5-13-12",
               mapQuery: "ホテルグランバッハ東京銀座",
@@ -1305,9 +1433,11 @@
               category: "美食",
               name: "銀座精緻洋食或壽司輕晚餐",
               hours: "18:30 - 20:00",
+              ticket: "銀座老舖風味",
               notes: "於銀座四丁目附近享用老舖洋食或板前壽司，散步回飯店。",
               address: "東京都中央区銀座４丁目",
-              mapQuery: "銀座四丁目交差点"
+              mapQuery: "銀座四丁目交差点",
+              transitModeIcon: "calculator"
             }
           ]
         },
@@ -1349,8 +1479,8 @@
               id: "d7-dinner",
               category: "美食",
               name: "Ushigoro S 銀座 (頂級和牛私廚 / 6位)",
-              hours: "18:30 - 21:00 (預約完成)",
-              ticket: "專人代烤 · 頂級全包廂",
+              hours: "18:30 - 21:00",
+              ticket: "預約完成 · 6位 (專人全代烤 / 全包廂)",
               bookingCode: "ZWQR6K",
               notes: "Ushigoro 旗下最高殿堂全包廂個室服務，專人代烤頂級黑毛和牛全餐。",
               address: "東京都中央区銀座7-7-7 銀座777ビル 6F",
@@ -1398,9 +1528,11 @@
               category: "美食",
               name: "銀座割烹或季節天婦羅盛宴",
               hours: "18:30",
+              ticket: "旅程慶功晚宴",
               notes: "旅程最後一晚在銀座享用精緻日式割烹或天婦羅，晚間整理行李備戰回程。",
               address: "東京都中央区銀座",
-              mapQuery: "銀座駅"
+              mapQuery: "銀座駅",
+              transitModeIcon: "calculator"
             }
           ]
         },
@@ -1430,7 +1562,8 @@
               ticket: "BR183 成田T2 ➔ 桃園T2",
               notes: "10:15 抵達航廈辦理登機、安檢與免稅購物。16:05 順利返抵國門。",
               address: "成田国際空港 第2ターミナル",
-              mapQuery: "成田国際空港 第2ターミナル"
+              mapQuery: "成田国際空港 第2ターミナル",
+              transitModeIcon: "plane"
             }
           ]
         }
@@ -1510,10 +1643,10 @@
         const selectedDateIndex = ref(0);
         
         // 長輩大字模式
-        const isElderlyMode = ref(localStorage.getItem('jp_elderly_mode_clean') === 'true');
+        const isElderlyMode = ref(localStorage.getItem('jp_elderly_mode_timeline') === 'true');
         const toggleElderlyMode = () => {
           isElderlyMode.value = !isElderlyMode.value;
-          localStorage.setItem('jp_elderly_mode_clean', isElderlyMode.value);
+          localStorage.setItem('jp_elderly_mode_timeline', isElderlyMode.value);
         };
 
         const tabs = [
@@ -1575,7 +1708,7 @@
         // 行程資料 (純文字乾淨版快取)
         let savedDays = null;
         try {
-          const raw = localStorage.getItem('jp_trip_v2026_no_img');
+          const raw = localStorage.getItem('jp_trip_v2026_timeline');
           if (raw) {
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed) && parsed.length > 0) savedDays = parsed;
@@ -1590,6 +1723,17 @@
 
         const currentDay = computed(() => {
           return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
+        });
+
+        // 今日速覽計算文字 (長輩一目了然)
+        const todayGlanceText = computed(() => {
+          const items = currentDay.value?.items || [];
+          const hasDinner = items.some(i => i.bookingCode || i.category === '美食');
+          const loc = currentDay.value?.location || '日本';
+          if (hasDinner) {
+            return `📍 ${loc} · 安排精緻晚餐預約 · 步調舒適`;
+          }
+          return `📍 ${loc} · 平緩漫遊步道 · 輕鬆無負擔`;
         });
 
         watch(() => currentDay.value?.location, (newLoc) => {
@@ -1706,12 +1850,13 @@
           }
         };
 
-        const copyText = (txt) => {
+        // 一鍵複製文字 (附帶自訂提示)
+        const copyText = (txt, label = '內容') => {
           if (!txt) return;
           navigator.clipboard.writeText(txt).then(() => {
-            alert(`已複製代號：${txt}`);
+            alert(`已複製${label}：${txt}`);
           }).catch(() => {
-            alert(`代號為：${txt}`);
+            alert(`${label}為：${txt}`);
           });
         };
 
@@ -1761,16 +1906,40 @@
         };
 
         const getTransitIcon = (icon) => {
-          const valid = ['train', 'bus', 'car', 'sailboat', 'mountain', 'footprints', 'plane'];
+          const valid = ['train', 'bus', 'car', 'sailboat', 'mountain', 'footprints', 'plane', 'calculator', 'bed'];
           return valid.includes(icon) ? icon : 'train';
+        };
+
+        // 時間軸節點背景和色
+        const timelineDotColor = (cat) => {
+          switch (cat) {
+            case '景點': return 'bg-emerald-600';
+            case '美食': return 'bg-amber-600';
+            case '住宿': return 'bg-indigo-600';
+            case '航班': return 'bg-slate-800';
+            case '交通': return 'bg-sky-600';
+            default: return 'bg-wabi-red';
+          }
+        };
+
+        // 卡片左側和色邊飾
+        const cardLeftAccent = (cat) => {
+          switch (cat) {
+            case '景點': return 'border-l-4 border-l-emerald-500';
+            case '美食': return 'border-l-4 border-l-amber-500';
+            case '住宿': return 'border-l-4 border-l-indigo-500';
+            case '交通': return 'border-l-4 border-l-sky-500';
+            default: return 'border-l-4 border-l-stone-400';
+          }
         };
 
         const categoryBadgeColor = (cat) => {
           switch (cat) {
-            case '景點': return 'bg-sky-50 text-sky-700';
-            case '住宿': return 'bg-indigo-50 text-indigo-700';
-            case '美食': return 'bg-amber-50 text-amber-800';
+            case '景點': return 'bg-emerald-50 text-emerald-800';
+            case '住宿': return 'bg-indigo-50 text-indigo-800';
+            case '美食': return 'bg-amber-50 text-amber-900';
             case '購物': return 'bg-rose-50 text-rose-700';
+            case '交通': return 'bg-sky-50 text-sky-800';
             case '航班': return 'bg-slate-800 text-white';
             default: return 'bg-slate-100 text-slate-700';
           }
@@ -1799,7 +1968,7 @@
         const handleFabClick = () => {
           if (currentTab.value === 'schedule') {
             isEditingSchedule.value = false;
-            modalScheduleForm.value = { id: 'it-' + Date.now(), category: '景點', name: '', hours: '', ticket: '', notes: '', address: '', transitModeIcon: 'train', transitTime: '15 分鐘' };
+            modalScheduleForm.value = { id: 'it-' + Date.now(), category: '景點', name: '', hours: '', ticket: '', bookingCode: '', notes: '', address: '', transitModeIcon: 'train', transitTime: '15 分鐘' };
             showScheduleModal.value = true;
           } else if (currentTab.value === 'shopping') {
             shoppingForm.value = { name: '', image: null, notes: '', bought: false };
@@ -1825,7 +1994,7 @@
           } else {
             items.push({ ...modalScheduleForm.value });
           }
-          localStorage.setItem('jp_trip_v2026_no_img', JSON.stringify(itineraryDays.value));
+          localStorage.setItem('jp_trip_v2026_timeline', JSON.stringify(itineraryDays.value));
           showScheduleModal.value = false;
         };
 
@@ -1834,7 +2003,7 @@
             const items = currentDay.value.items;
             const idx = items.findIndex(i => i.id === modalScheduleForm.value.id);
             if (idx !== -1) items.splice(idx, 1);
-            localStorage.setItem('jp_trip_v2026_no_img', JSON.stringify(itineraryDays.value));
+            localStorage.setItem('jp_trip_v2026_timeline', JSON.stringify(itineraryDays.value));
             showScheduleModal.value = false;
           }
         };
@@ -1897,6 +2066,9 @@
           openPhraseModal,
           speakJapanese,
           copyText,
+          todayGlanceText,
+          timelineDotColor,
+          cardLeftAccent,
           vjwQr,
           showFullScreenQr,
           handleVjwUpload,
