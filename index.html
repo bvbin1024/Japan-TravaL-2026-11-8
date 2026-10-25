@@ -10,10 +10,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="日本孝親行" />
-  <meta name="theme-color" content="#9B2226" />
+  <meta name="theme-color" content="#A93226" />
   <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=192&q=80" />
   
-  <link rel="manifest" href='data:application/manifest+json,{"name":"Japan Journey 2026","short_name":"日本孝親行","start_url":"./","display":"standalone","background_color":"#1D2D44","theme_color":"#9B2226","orientation":"portrait","icons":[{"src":"https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=192&q=80","sizes":"192x192","type":"image/jpeg"},{"src":"https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=512&q=80","sizes":"512x512","type":"image/jpeg"}]}' />
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Japan Journey 2026","short_name":"日本孝親行","start_url":"./","display":"standalone","background_color":"#1C2541","theme_color":"#A93226","orientation":"portrait","icons":[{"src":"https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=192&q=80","sizes":"192x192","type":"image/jpeg"},{"src":"https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=512&q=80","sizes":"512x512","type":"image/jpeg"}]}' />
 
   <!-- 預先連線 -->
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
@@ -34,13 +34,14 @@
       theme: {
         extend: {
           colors: {
-            jp: {
-              red: '#9B2226',
-              crimson: '#AE2012',
-              navy: '#0B2545',
-              sand: '#F8F9FA',
-              ink: '#1D2D44',
-              gold: '#DDA15E'
+            wabi: {
+              red: '#A93226',
+              darkred: '#7B241C',
+              bg: '#FAF8F5',
+              card: '#FFFFFF',
+              dark: '#1F2937',
+              gold: '#D4AC0D',
+              border: '#E8E4DF'
             }
           },
           fontFamily: {
@@ -58,34 +59,36 @@
   </style>
 </head>
 
-<body class="bg-slate-100 flex justify-center min-h-screen text-slate-800 font-sans antialiased">
+<body class="bg-stone-100 flex justify-center min-h-screen text-slate-800 font-sans antialiased">
 
-  <div id="app" :class="isElderlyMode ? 'elderly-mode' : ''" class="w-full max-w-[480px] min-h-screen bg-jp-sand shadow-2xl relative pb-28 flex flex-col">
+  <div id="app" :class="isElderlyMode ? 'elderly-mode' : ''" class="w-full max-w-[480px] min-h-screen bg-wabi-bg shadow-2xl relative pb-28 flex flex-col">
 
-    <!-- 頂部 Hero 圖片 -->
-    <header class="relative h-56 w-full overflow-hidden bg-jp-navy flex-shrink-0">
+    <!-- 頂部 Hero 區域 -->
+    <header class="relative h-56 w-full overflow-hidden bg-slate-900 flex-shrink-0">
       <img 
         :src="tripInfo.coverImage" 
         alt="Japan Trip" 
-        class="w-full h-full object-cover opacity-75"
+        class="w-full h-full object-cover opacity-80"
         decoding="async"
         loading="eager"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-jp-navy/95 via-jp-navy/40 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/35 to-transparent"></div>
       
-      <!-- 頂部標題與大字切換 -->
+      <!-- 頂部標題與大字模式切換 -->
       <div class="absolute top-5 left-5 right-5 text-white flex justify-between items-start">
         <div>
-          <span class="text-[11px] uppercase tracking-widest text-jp-gold font-bold">Elderly Travel Guide</span>
-          <h1 class="text-2xl font-black tracking-tight mt-0.5">{{ tripInfo.title }}</h1>
-          <p class="text-xs text-slate-200 mt-0.5">{{ tripInfo.subtitle }}</p>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] uppercase tracking-wider bg-wabi-red/90 text-white font-black px-2 py-0.5 rounded-full">Day {{ selectedDateIndex + 1 }} / 9</span>
+            <span class="text-[11px] text-amber-300 font-bold tracking-wide">{{ currentDay?.location }}</span>
+          </div>
+          <h1 class="text-2xl font-black tracking-tight mt-1">{{ tripInfo.title }}</h1>
+          <p class="text-xs text-slate-200 mt-0.5 font-medium">{{ tripInfo.subtitle }}</p>
         </div>
 
-        <!-- 一鍵切換長輩大字模式 -->
         <button 
           @click="isElderlyMode = !isElderlyMode" 
           class="px-2.5 py-1 rounded-full text-xs font-bold transition flex items-center gap-1 border border-white/30 backdrop-blur-md"
-          :class="isElderlyMode ? 'bg-amber-400 text-slate-900 border-amber-300 shadow-md' : 'bg-black/30 text-white'"
+          :class="isElderlyMode ? 'bg-amber-400 text-slate-900 border-amber-300 shadow-md' : 'bg-black/35 text-white'"
         >
           <span>Aa</span>
           <span>{{ isElderlyMode ? '標準字' : '大字體' }}</span>
@@ -93,12 +96,12 @@
       </div>
 
       <!-- 浮動於圖片右下方的 ICON Tab Bar -->
-      <nav class="absolute bottom-3 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/50 flex items-center gap-1.5">
+      <nav class="absolute bottom-3 right-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/60 flex items-center gap-1.5">
         <button 
           v-for="tab in tabs" 
           :key="tab.id"
           @click="currentTab = tab.id"
-          :class="currentTab === tab.id ? 'bg-jp-red text-white shadow-md' : 'text-slate-600 hover:text-jp-red'"
+          :class="currentTab === tab.id ? 'bg-wabi-red text-white shadow-md' : 'text-slate-600 hover:text-wabi-red'"
           class="p-2.5 rounded-full transition-all duration-200 flex items-center justify-center relative"
           :title="tab.name"
         >
@@ -108,38 +111,40 @@
     </header>
 
     <!-- 主內容區域 -->
-    <main class="flex-1 px-4 pt-3">
+    <main class="flex-1 px-4 pt-3.5">
 
       <!-- ================= 1. 每日行程表 ================= -->
       <section v-show="currentTab === 'schedule'">
-        <!-- 日期滑動列 -->
-        <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-2.5 pt-1">
+        <!-- 日期滑動列 (加入週末標籤醒目色) -->
+        <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-3 pt-0.5">
           <button 
             v-for="(day, index) in itineraryDays" 
             :key="day.dateStr"
             @click="changeDate(index)"
             :class="selectedDateIndex === index 
-              ? 'bg-jp-red text-white shadow-md scale-105' 
-              : 'bg-white text-slate-700 border border-slate-200'"
+              ? 'bg-wabi-red text-white shadow-md scale-105' 
+              : 'bg-white text-slate-700 border border-wabi-border shadow-2xs'"
             class="flex-shrink-0 flex flex-col items-center justify-center w-[58px] h-[68px] rounded-2xl transition-all duration-150"
           >
-            <span class="text-xs font-bold uppercase tracking-wider">{{ day.weekday }}</span>
-            <span class="text-lg font-extrabold leading-none mt-1">{{ day.dayNumber }}</span>
+            <span :class="['Sun', 'Sat'].includes(day.weekday) && selectedDateIndex !== index ? 'text-rose-600' : ''" class="text-xs font-bold uppercase tracking-wider">
+              {{ day.weekday }}
+            </span>
+            <span class="text-lg font-black leading-none mt-1">{{ day.dayNumber }}</span>
           </button>
         </div>
 
         <!-- 每日天氣資訊 -->
-        <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 mb-3.5 mt-1 shadow-xs">
+        <div class="bg-white border border-wabi-border rounded-2xl p-3.5 mb-3.5 shadow-2xs">
           <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <div class="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
-              <app-icon name="map-pin" class="w-3.5 h-3.5 text-jp-red" />
-              <span>{{ currentDay?.location }} 天氣預報</span>
+            <div class="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
+              <app-icon name="map-pin" class="w-3.5 h-3.5 text-wabi-red" />
+              <span>{{ currentDay?.location }} 氣象預報</span>
             </div>
             
             <button 
               @click="fetchLiveWeather(currentDay?.location)" 
               :disabled="isWeatherLoading"
-              class="text-[11px] text-jp-red hover:text-jp-crimson font-bold flex items-center gap-1 transition disabled:opacity-50"
+              class="text-[11px] text-wabi-red hover:text-wabi-darkred font-bold flex items-center gap-1 transition disabled:opacity-50"
             >
               <app-icon name="refresh-cw" :class="isWeatherLoading ? 'animate-spin' : ''" class="w-3 h-3" />
               <span>{{ isWeatherLoading ? '更新中' : '即時天氣' }}</span>
@@ -148,28 +153,28 @@
 
           <div class="flex items-center justify-between pt-2.5">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-jp-red">
+              <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-wabi-red">
                 <app-icon :name="currentDayWeather?.icon || 'cloud-sun'" class="w-6 h-6" />
               </div>
               <div>
-                <div class="text-sm font-extrabold text-slate-800">{{ currentDayWeather?.summary || '晴時多雲' }}</div>
+                <div class="text-sm font-black text-slate-800">{{ currentDayWeather?.summary || '秋高氣爽' }}</div>
                 <div class="text-[10px] text-slate-400">更新時間：{{ weatherLastUpdated }}</div>
               </div>
             </div>
             <div class="text-right">
-              <div class="text-xl font-black text-jp-ink">{{ currentDayWeather?.temp ?? 16 }}°C</div>
+              <div class="text-xl font-black text-slate-900">{{ currentDayWeather?.temp ?? 16 }}°C</div>
               <div class="text-[11px] text-slate-500 font-medium">體感 {{ currentDayWeather?.feelsLike ?? 15 }}°C</div>
             </div>
           </div>
         </div>
 
         <!-- 住宿資訊小卡 -->
-        <div v-if="currentDay?.hotel" class="mb-3.5 bg-red-50/70 border border-red-100 rounded-xl p-3 flex items-center justify-between">
-          <div class="flex items-center gap-2.5 text-xs text-slate-800 font-semibold">
-            <app-icon name="bed" class="w-4 h-4 text-jp-red shrink-0" />
+        <div v-if="currentDay?.hotel" class="mb-3.5 bg-red-50/70 border border-red-200/80 rounded-xl p-3 flex items-center justify-between shadow-2xs">
+          <div class="flex items-center gap-2.5 text-xs text-slate-800 font-bold">
+            <app-icon name="bed" class="w-4 h-4 text-wabi-red shrink-0" />
             <span class="truncate">今晚住宿：{{ currentDay.hotel.name }}</span>
           </div>
-          <button @click="openGoogleMap(currentDay.hotel.address)" class="text-xs text-jp-red font-bold underline shrink-0">
+          <button @click="openGoogleMap(currentDay.hotel.address)" class="text-xs text-wabi-red font-bold underline shrink-0 hover:text-wabi-darkred">
             導航
           </button>
         </div>
@@ -181,29 +186,29 @@
             <!-- 上下行程間的交通資訊 -->
             <div v-if="idx > 0" class="flex items-center justify-center gap-3 py-1 text-slate-400 text-xs">
               <div class="h-px bg-slate-200 flex-1"></div>
-              <div class="flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 text-slate-600 font-medium">
-                <app-icon :name="getTransitIcon(item.transitModeIcon)" class="w-3.5 h-3.5 text-jp-red" />
+              <div class="flex items-center gap-1.5 bg-white px-3 py-1 rounded-full border border-wabi-border text-slate-600 font-medium shadow-2xs">
+                <app-icon :name="getTransitIcon(item.transitModeIcon)" class="w-3.5 h-3.5 text-wabi-red" />
                 <span>交通約 {{ item.transitTime || '15 分鐘' }}</span>
               </div>
               <div class="h-px bg-slate-200 flex-1"></div>
             </div>
 
-            <!-- 航班卡片 -->
+            <!-- 航班專用卡片 -->
             <div 
               v-if="item.category === '航班'" 
-              class="bg-gradient-to-br from-jp-navy to-slate-900 text-white rounded-2xl p-4 shadow-md relative border border-slate-700"
+              class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md relative border border-slate-700"
             >
               <div class="flex justify-between items-center text-xs text-slate-300 pb-2 border-b border-white/10">
-                <span class="font-extrabold tracking-wider">{{ item.name }}</span>
-                <span class="bg-jp-red px-2 py-0.5 rounded text-[10px] font-bold">{{ item.ticket || '長榮航空' }}</span>
+                <span class="font-black tracking-wider">{{ item.name }}</span>
+                <span class="bg-wabi-red px-2 py-0.5 rounded text-[10px] font-bold">{{ item.ticket || '長榮航空' }}</span>
               </div>
               <div class="my-3 text-xs text-slate-200 leading-relaxed">
-                <p class="font-medium">時間：{{ item.hours }}</p>
+                <p class="font-bold">時間：{{ item.hours }}</p>
                 <p class="mt-1 text-amber-200">{{ item.notes }}</p>
               </div>
               <div class="pt-2 border-t border-white/10 flex justify-end">
                 <button @click="openGoogleMap(item.address || item.name)" class="text-xs text-slate-200 underline flex items-center gap-1">
-                  <app-icon name="navigation-2" class="w-3.5 h-3.5" /> 機場導航
+                  <app-icon name="navigation-2" class="w-3.5 h-3.5" /> 機場航廈導航
                 </button>
               </div>
             </div>
@@ -211,7 +216,7 @@
             <!-- 一般行程卡片 -->
             <div 
               v-else 
-              class="bg-white rounded-2xl p-4 shadow-xs border border-slate-200 hover:border-jp-red/40 transition-all relative"
+              class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border hover:border-wabi-red/40 transition-all relative"
             >
               <div class="flex items-start justify-between">
                 <div class="flex items-center gap-2">
@@ -225,27 +230,43 @@
                 </button>
               </div>
 
+              <!-- 時間與預約/門票資訊 -->
               <div class="mt-2.5 space-y-1 text-xs text-slate-600">
                 <div v-if="item.hours" class="flex items-center gap-1.5 font-medium">
                   <app-icon name="clock" class="w-3.5 h-3.5 text-slate-400" />
                   <span>時間：{{ item.hours }}</span>
                 </div>
                 <div v-if="item.ticket" class="flex items-center gap-1.5 font-medium">
-                  <app-icon name="ticket" class="w-3.5 h-3.5 text-jp-red" />
-                  <span class="text-jp-red font-semibold">資訊/門票：{{ item.ticket }}</span>
+                  <app-icon name="ticket" class="w-3.5 h-3.5 text-wabi-red" />
+                  <span class="text-wabi-red font-bold">門票 / 資訊：{{ item.ticket }}</span>
                 </div>
               </div>
 
-              <!-- 長輩動線備註 -->
-              <div v-if="item.notes" class="mt-2.5 bg-slate-50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-slate-100">
+              <!-- 餐廳預約代號「一鍵複製」專用模組 -->
+              <div v-if="item.bookingCode" class="mt-2.5 p-2 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between">
+                <div class="text-xs">
+                  <span class="text-slate-500 font-medium">預約代號：</span>
+                  <span class="font-black text-amber-900 tracking-wider ml-1">{{ item.bookingCode }}</span>
+                </div>
+                <button 
+                  @click="copyText(item.bookingCode)" 
+                  class="text-[11px] bg-amber-200/80 hover:bg-amber-300 text-amber-900 font-bold px-2.5 py-1 rounded-lg transition active:scale-95 flex items-center gap-1"
+                >
+                  <app-icon name="copy" class="w-3 h-3" />
+                  <span>複製代號</span>
+                </button>
+              </div>
+
+              <!-- 長輩動線貼心備註 -->
+              <div v-if="item.notes" class="mt-2.5 bg-stone-50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-stone-100">
                 {{ item.notes }}
               </div>
 
-              <!-- 底部按鈕區 -->
+              <!-- 底部按鈕區：Google Maps 精確導航 -->
               <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end">
                 <button 
-                  @click.stop="openGoogleMap(item.address || item.name)"
-                  class="flex items-center gap-1.5 text-xs font-bold text-jp-red hover:text-jp-crimson bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition"
+                  @click.stop="openGoogleMap(item.mapQuery || item.address || item.name)"
+                  class="flex items-center gap-1.5 text-xs font-bold text-wabi-red hover:text-wabi-darkred bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition"
                 >
                   <app-icon name="navigation-2" class="w-3.5 h-3.5" />
                   <span>Google Maps 導航</span>
@@ -261,16 +282,16 @@
       <!-- ================= 2. 資訊頁 (i) ================= -->
       <section v-show="currentTab === 'info'" class="space-y-4">
         
-        <!-- 長輩常用手指日語會話卡 (點擊彈出大字) -->
-        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-200">
+        <!-- 【孝親專用】長輩常用手指日語會話卡 (點擊彈出大字) -->
+        <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex items-center gap-2">
-              <div class="p-1.5 rounded-lg bg-red-50 text-jp-red">
+              <div class="p-1.5 rounded-lg bg-red-50 text-wabi-red">
                 <app-icon name="message-square" class="w-4 h-4" />
               </div>
-              <h2 class="text-sm font-extrabold text-slate-800">長輩手指日語卡（點擊大字出示）</h2>
+              <h2 class="text-sm font-black text-slate-800">長輩手指日語卡（點擊大字出示）</h2>
             </div>
-            <span class="text-[11px] text-slate-400">免開口即時問</span>
+            <span class="text-[11px] text-slate-400 font-medium">免開口即時問</span>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
@@ -278,7 +299,7 @@
               v-for="ph in quickPhrases" 
               :key="ph.jp"
               @click="openPhraseModal(ph)"
-              class="p-2.5 bg-slate-50 hover:bg-red-50/60 border border-slate-200 rounded-xl text-left transition"
+              class="p-2.5 bg-stone-50 hover:bg-red-50/60 border border-stone-200 rounded-xl text-left transition"
             >
               <div class="text-xs font-bold text-slate-800 truncate">{{ ph.zh }}</div>
               <div class="text-[11px] text-slate-500 truncate mt-0.5">{{ ph.jp }}</div>
@@ -287,14 +308,14 @@
         </div>
 
         <!-- Visit Japan Web / 護照 QR 專區 (離線放大) -->
-        <div class="bg-gradient-to-r from-jp-navy to-slate-900 text-white rounded-2xl p-4 shadow-md border border-slate-700 relative overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md border border-slate-700 relative overflow-hidden">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
               <div class="p-1.5 rounded-lg bg-white/20 text-white">
                 <app-icon name="qr-code" class="w-4 h-4" />
               </div>
               <div>
-                <h2 class="text-sm font-extrabold">入境與退稅 QR Code</h2>
+                <h2 class="text-sm font-black">入境與退稅 QR Code</h2>
                 <p class="text-[10px] text-slate-300">Visit Japan Web / 護照截圖存檔</p>
               </div>
             </div>
@@ -308,7 +329,7 @@
           <div v-if="vjwQr" @click="showFullScreenQr = true" class="bg-white rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer shadow-inner group">
             <img :src="vjwQr" alt="VJW QR" class="max-h-48 object-contain rounded-lg transition-transform group-hover:scale-102" />
             <span class="text-[11px] text-slate-600 font-bold mt-2.5 flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-full">
-              <app-icon name="maximize-2" class="w-3 h-3 text-jp-red" />
+              <app-icon name="maximize-2" class="w-3 h-3 text-wabi-red" />
               點擊放大全螢幕供海關/免稅掃描
             </span>
           </div>
@@ -320,19 +341,19 @@
         </div>
 
         <!-- 日圓即時匯率換算 & 硬幣小圖鑑 -->
-        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-200">
+        <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
-              <div class="p-1.5 rounded-lg bg-red-50 text-jp-red">
+              <div class="p-1.5 rounded-lg bg-red-50 text-wabi-red">
                 <app-icon name="calculator" class="w-4 h-4" />
               </div>
-              <h2 class="text-sm font-extrabold text-slate-800">日幣換算 (JPY ➔ TWD)</h2>
+              <h2 class="text-sm font-black text-slate-800">日幣換算 (JPY ➔ TWD)</h2>
             </div>
 
             <button 
               @click="fetchLiveRates" 
               :disabled="isRateLoading"
-              class="text-xs text-jp-red flex items-center gap-1 hover:text-jp-crimson font-bold transition disabled:opacity-50"
+              class="text-xs text-wabi-red flex items-center gap-1 hover:text-wabi-darkred font-bold transition disabled:opacity-50"
             >
               <app-icon name="refresh-cw" :class="isRateLoading ? 'animate-spin' : ''" class="w-3.5 h-3.5" />
               <span>{{ isRateLoading ? '更新中' : '即時匯率' }}</span>
@@ -345,15 +366,15 @@
                 v-model.number="inputJpyAmount" 
                 type="number" 
                 placeholder="輸入日幣金額" 
-                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-base focus:outline-none focus:border-jp-red font-bold"
+                class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-base focus:outline-none focus:border-wabi-red font-bold"
               />
-              <span class="absolute right-3.5 top-3 text-xs text-slate-400 font-extrabold">JPY ¥</span>
+              <span class="absolute right-3.5 top-3 text-xs text-slate-400 font-black">JPY ¥</span>
             </div>
             <div class="p-3 bg-red-50/70 rounded-xl flex items-center justify-between">
-              <span class="text-xs text-slate-600 font-medium">換算約合台幣</span>
-              <span class="text-lg font-black text-jp-red">NT$ {{ convertedTWD.toLocaleString() }}</span>
+              <span class="text-xs text-slate-600 font-bold">換算約合台幣</span>
+              <span class="text-lg font-black text-wabi-red">NT$ {{ convertedTWD.toLocaleString() }}</span>
             </div>
-            <div class="flex justify-between items-center text-[10px] text-slate-400 px-1">
+            <div class="flex justify-between items-center text-[10px] text-slate-400 px-1 font-medium">
               <span>更新時間：{{ rateLastUpdated }}</span>
               <span>1 JPY ≈ {{ currentJpyRate }} TWD</span>
             </div>
@@ -361,39 +382,39 @@
 
           <!-- 長輩找零錢提示 -->
           <div class="mt-3 pt-3 border-t border-slate-100">
-            <span class="text-[11px] font-bold text-slate-500 block mb-1.5">長輩找零錢提示：</span>
-            <div class="flex justify-between text-center text-[11px]">
-              <span class="px-2 py-1 bg-slate-100 rounded-lg">1円 (鋁輕)</span>
-              <span class="px-2 py-1 bg-amber-100 rounded-lg">5円 (黃銅有孔)</span>
-              <span class="px-2 py-1 bg-amber-200 rounded-lg">10円 (青銅)</span>
-              <span class="px-2 py-1 bg-slate-100 rounded-lg">50円 (有孔)</span>
-              <span class="px-2 py-1 bg-slate-200 rounded-lg font-bold">100円 (常見)</span>
-              <span class="px-2 py-1 bg-yellow-100 rounded-lg font-bold text-amber-800">500円 (最大)</span>
+            <span class="text-[11px] font-bold text-slate-500 block mb-1.5">長輩找零錢快速辨識：</span>
+            <div class="grid grid-cols-3 gap-1.5 text-center text-[11px] font-medium">
+              <span class="px-2 py-1 bg-stone-100 rounded-lg">1円 (鋁製極輕)</span>
+              <span class="px-2 py-1 bg-amber-100 rounded-lg text-amber-900">5円 (黃銅中間有孔)</span>
+              <span class="px-2 py-1 bg-amber-200/70 rounded-lg text-amber-900">10円 (青銅褐色)</span>
+              <span class="px-2 py-1 bg-stone-100 rounded-lg">50円 (銀白有孔)</span>
+              <span class="px-2 py-1 bg-stone-200 rounded-lg font-bold">100円 (最常用)</span>
+              <span class="px-2 py-1 bg-yellow-100 rounded-lg font-black text-amber-900">500円 (最大顆)</span>
             </div>
           </div>
         </div>
 
         <!-- 航班資訊 -->
-        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-200">
+        <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center gap-2 mb-3">
-            <div class="p-1.5 rounded-lg bg-red-50 text-jp-red">
+            <div class="p-1.5 rounded-lg bg-red-50 text-wabi-red">
               <app-icon name="plane" class="w-4 h-4" />
             </div>
-            <h2 class="text-sm font-extrabold text-slate-800">航班明細表</h2>
+            <h2 class="text-sm font-black text-slate-800">航班明細表</h2>
           </div>
 
           <div class="space-y-2.5">
-            <div v-for="fl in tripInfo.flights" :key="fl.code + fl.date" class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <div v-for="fl in tripInfo.flights" :key="fl.code + fl.date" class="p-3 bg-stone-50 rounded-xl border border-stone-200/70">
               <div class="flex justify-between items-center text-xs">
-                <span class="font-extrabold text-jp-red">{{ fl.type }} · {{ fl.code }}</span>
-                <span class="text-slate-500 font-medium">{{ fl.date }}</span>
+                <span class="font-black text-wabi-red">{{ fl.type }} · {{ fl.code }}</span>
+                <span class="text-slate-500 font-bold">{{ fl.date }}</span>
               </div>
               <div class="flex items-center justify-between mt-2">
                 <div>
                   <div class="font-black text-sm text-slate-800">{{ fl.from }}</div>
                   <div class="text-[11px] text-slate-500">{{ fl.depTime }}</div>
                 </div>
-                <div class="text-center text-[10px] text-slate-400">
+                <div class="text-center text-[10px] text-slate-400 font-medium">
                   <span>{{ fl.duration }}</span>
                   <div class="w-16 h-px bg-slate-300 my-0.5"></div>
                 </div>
@@ -402,30 +423,30 @@
                   <div class="text-[11px] text-slate-500">{{ fl.arrTime }}</div>
                 </div>
               </div>
-              <p class="text-[11px] text-slate-500 mt-2 pt-1 border-t border-slate-200/60 leading-relaxed">{{ fl.notes }}</p>
+              <p class="text-[11px] text-slate-500 mt-2 pt-1 border-t border-slate-200/70 leading-relaxed">{{ fl.notes }}</p>
             </div>
           </div>
         </div>
 
         <!-- 住宿清單 -->
-        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-200">
+        <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center gap-2 mb-3">
-            <div class="p-1.5 rounded-lg bg-red-50 text-jp-red">
+            <div class="p-1.5 rounded-lg bg-red-50 text-wabi-red">
               <app-icon name="bed" class="w-4 h-4" />
             </div>
-            <h2 class="text-sm font-extrabold text-slate-800">全泊飯店資訊</h2>
+            <h2 class="text-sm font-black text-slate-800">全泊飯店清單</h2>
           </div>
 
           <div class="space-y-3">
-            <div v-for="h in tripInfo.hotels" :key="h.name" class="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs">
+            <div v-for="h in tripInfo.hotels" :key="h.name" class="p-3 bg-stone-50 rounded-xl border border-stone-200/70 space-y-1.5 text-xs">
               <div class="flex justify-between font-bold text-slate-800">
-                <span class="text-sm">{{ h.name }}</span>
-                <span class="text-jp-red font-extrabold">{{ h.dates }}</span>
+                <span class="text-sm font-black">{{ h.name }}</span>
+                <span class="text-wabi-red font-black">{{ h.dates }}</span>
               </div>
               <p class="text-slate-600 leading-relaxed">{{ h.address }}</p>
               <div class="flex justify-between items-center pt-1">
-                <span class="text-slate-400">Tel: {{ h.phone }}</span>
-                <button @click="openGoogleMap(h.address)" class="font-bold text-jp-red flex items-center gap-1 underline">
+                <span class="text-slate-500 font-medium">電話: <a :href="'tel:' + h.phone" class="text-wabi-red font-bold underline">{{ h.phone }}</a></span>
+                <button @click="openGoogleMap(h.address)" class="font-bold text-wabi-red flex items-center gap-1 underline">
                   <app-icon name="map-pin" class="w-3.5 h-3.5" /> Google Maps
                 </button>
               </div>
@@ -433,24 +454,54 @@
           </div>
         </div>
 
-        <!-- 緊急電話與海外救助 -->
-        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-200">
-          <div class="flex items-center gap-2 mb-2.5">
+        <!-- 【重大修正】日本緊急救助、醫療與觀光諮詢專線 -->
+        <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
+          <div class="flex items-center gap-2 mb-3">
             <div class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
               <app-icon name="shield-alert" class="w-4 h-4" />
             </div>
-            <h2 class="text-sm font-extrabold text-slate-800">日本緊急電話</h2>
+            <h2 class="text-sm font-black text-slate-800">日本緊急通訊與中文求助專線</h2>
           </div>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-              <div class="font-bold text-slate-700">日本境內緊急報案</div>
-              <div class="mt-1 text-slate-600">警察報案：<a href="tel:110" class="font-bold text-jp-red">110</a></div>
-              <div class="text-slate-600">救護火警：<a href="tel:119" class="font-bold text-jp-red">119</a></div>
+
+          <div class="space-y-2 text-xs">
+            <!-- 觀光局全天候專線 -->
+            <div class="p-3 bg-amber-50/80 border border-amber-200 rounded-xl">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-amber-900">JNTO 日本觀光局 24小時多語言熱線</span>
+                <a href="tel:05038162720" class="bg-amber-500 text-white font-black px-2.5 py-1 rounded-lg">撥打求助</a>
+              </div>
+              <p class="text-[11px] text-amber-800 mt-1">電話：050-3816-2720（事故、生病就醫、中文翻譯專用）</p>
             </div>
-            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-              <div class="font-bold text-slate-700">台灣駐日急難救助</div>
-              <div class="mt-1 text-slate-600 truncate">東京代表處：<a href="tel:+81332807811" class="font-bold text-jp-red">撥打</a></div>
-              <div class="text-slate-600 truncate">大阪辦事處：<a href="tel:+81664438481" class="font-bold text-jp-red">撥打</a></div>
+
+            <!-- 當地急難 -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200/80">
+                <div class="font-bold text-slate-800">警察緊急報案</div>
+                <div class="mt-1 text-slate-600">日本電話撥打：<a href="tel:110" class="font-black text-wabi-red text-sm">110</a></div>
+                <p class="text-[10px] text-slate-400 mt-0.5">漫遊若撥不通請加國碼</p>
+              </div>
+              <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200/80">
+                <div class="font-bold text-slate-800">救護車 / 火警</div>
+                <div class="mt-1 text-slate-600">日本電話撥打：<a href="tel:119" class="font-black text-wabi-red text-sm">119</a></div>
+                <p class="text-[10px] text-slate-400 mt-0.5">支援三方通話口譯</p>
+              </div>
+            </div>
+
+            <!-- 駐日辦事處 -->
+            <div class="p-3 bg-stone-50 rounded-xl border border-stone-200/80 space-y-1.5">
+              <div class="font-bold text-slate-800">台灣駐日代表處 24小時急難救助</div>
+              <div class="flex justify-between items-center text-[11px] text-slate-600">
+                <span>東京代表處（關東）：03-3280-7811</span>
+                <a href="tel:+81332807811" class="font-bold text-wabi-red underline">撥打</a>
+              </div>
+              <div class="flex justify-between items-center text-[11px] text-slate-600">
+                <span>大阪辦事處（關西）：06-6443-8481</span>
+                <a href="tel:+81664438481" class="font-bold text-wabi-red underline">撥打</a>
+              </div>
+              <div class="flex justify-between items-center text-[11px] text-slate-600 pt-1 border-t border-stone-200">
+                <span>緊急醫療諮詢（夜間諮詢）：#7119</span>
+                <a href="tel:7119" class="font-bold text-wabi-red underline">撥打</a>
+              </div>
             </div>
           </div>
         </div>
@@ -461,11 +512,11 @@
       <!-- ================= 3. 購物清單 (購物籃) ================= -->
       <section v-show="currentTab === 'shopping'" class="space-y-4">
         <div class="flex justify-between items-center mb-2">
-          <h2 class="text-base font-extrabold text-slate-800">日本必買清單</h2>
-          <span class="text-xs text-slate-400">共 {{ shoppingList.length }} 項</span>
+          <h2 class="text-base font-black text-slate-800">日本必買清單</h2>
+          <span class="text-xs text-slate-400 font-bold">共 {{ shoppingList.length }} 項</span>
         </div>
 
-        <div v-if="shoppingList.length === 0" class="text-center py-16 text-slate-400 text-sm">
+        <div v-if="shoppingList.length === 0" class="text-center py-16 text-slate-400 text-sm font-medium">
           點擊右下角「+」按鈕新增想買的物品與照片
         </div>
 
@@ -473,13 +524,13 @@
           <div 
             v-for="(item, sIdx) in shoppingList" 
             :key="item.id" 
-            class="bg-white rounded-2xl overflow-hidden shadow-xs border border-slate-200 flex flex-col"
+            class="bg-white rounded-2xl overflow-hidden shadow-2xs border border-wabi-border flex flex-col"
           >
-            <div class="w-full h-32 bg-slate-100 relative overflow-hidden flex items-center justify-center">
+            <div class="w-full h-32 bg-stone-100 relative overflow-hidden flex items-center justify-center">
               <img v-if="item.image" :src="item.image" class="w-full h-full object-cover" />
               <div v-else class="flex flex-col items-center text-slate-300">
                 <app-icon name="image" class="w-8 h-8" />
-                <span class="text-[10px] mt-1">無照片</span>
+                <span class="text-[10px] mt-1 font-medium">無照片</span>
               </div>
               <button @click="deleteShoppingItem(sIdx)" class="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1">
                 <app-icon name="x" class="w-3.5 h-3.5" />
@@ -488,11 +539,11 @@
             <div class="p-3 flex-1 flex flex-col justify-between">
               <div>
                 <h4 class="font-bold text-slate-800 text-sm truncate">{{ item.name }}</h4>
-                <p v-if="item.notes" class="text-slate-500 text-xs mt-0.5 line-clamp-2">{{ item.notes }}</p>
+                <p v-if="item.notes" class="text-slate-500 text-xs mt-0.5 line-clamp-2 leading-relaxed">{{ item.notes }}</p>
               </div>
               <div class="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-xs">
-                <label class="flex items-center gap-1.5 text-slate-600 cursor-pointer">
-                  <input type="checkbox" v-model="item.bought" class="rounded text-jp-red" />
+                <label class="flex items-center gap-1.5 text-slate-600 cursor-pointer font-medium">
+                  <input type="checkbox" v-model="item.bought" class="rounded text-wabi-red" />
                   <span :class="item.bought ? 'line-through text-slate-400' : ''">已購買</span>
                 </label>
               </div>
@@ -504,30 +555,30 @@
 
       <!-- ================= 4. 花費記帳 (幣別日幣 JPY 轉 TWD) ================= -->
       <section v-show="currentTab === 'expenses'" class="space-y-4">
-        <div class="bg-gradient-to-br from-jp-navy to-slate-900 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden">
-          <span class="text-xs uppercase font-extrabold text-amber-300 tracking-wider">Total Expenses</span>
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden">
+          <span class="text-xs uppercase font-black text-amber-300 tracking-wider">Total Expenses</span>
           <div class="text-3xl font-black mt-1">
             ¥ {{ totalExpenseJPY.toLocaleString() }}
           </div>
-          <div class="text-xs text-slate-300 mt-1">
+          <div class="text-xs text-slate-300 mt-1 font-medium">
             約合新台幣 NT$ {{ Math.round(totalExpenseJPY * currentJpyRate).toLocaleString() }}
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-200">
+        <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex justify-between items-center mb-3">
-            <h3 class="text-sm font-extrabold text-slate-800">支出明細列表</h3>
-            <span class="text-xs text-slate-400">最新在最前</span>
+            <h3 class="text-sm font-black text-slate-800">支出明細列表</h3>
+            <span class="text-xs text-slate-400 font-medium">最新在最前</span>
           </div>
 
-          <div v-if="expenses.length === 0" class="text-center py-12 text-slate-400 text-xs">
+          <div v-if="expenses.length === 0" class="text-center py-12 text-slate-400 text-xs font-medium">
             目前尚無花費記錄，請按右下角「+」記帳
           </div>
 
           <div class="divide-y divide-slate-100">
             <div v-for="(exp, eIdx) in expenses" :key="exp.id" class="py-3 flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                <div class="w-9 h-9 rounded-xl bg-stone-100 flex items-center justify-center text-slate-600">
                   <app-icon :name="expenseCategoryIcon(exp.category)" class="w-4 h-4" />
                 </div>
                 <div>
@@ -542,7 +593,7 @@
               </div>
               <div class="text-right">
                 <div class="font-black text-slate-800 text-sm">¥ {{ Number(exp.amount).toLocaleString() }}</div>
-                <button @click="deleteExpense(eIdx)" class="text-[10px] text-rose-500 hover:text-rose-700 mt-0.5">刪除</button>
+                <button @click="deleteExpense(eIdx)" class="text-[10px] text-rose-500 hover:text-rose-700 mt-0.5 font-bold">刪除</button>
               </div>
             </div>
           </div>
@@ -555,7 +606,7 @@
     <button 
       v-show="currentTab !== 'info'"
       @click="handleFabClick" 
-      class="fixed bottom-6 right-6 md:right-[calc(50%-216px)] w-14 h-14 bg-jp-red text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-jp-crimson active:scale-95 transition-all z-30"
+      class="fixed bottom-6 right-6 md:right-[calc(50%-216px)] w-14 h-14 bg-wabi-red text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-wabi-darkred active:scale-95 transition-all z-30"
       title="新增項目"
     >
       <app-icon name="plus" class="w-7 h-7" />
@@ -568,7 +619,7 @@
       class="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-6 backdrop-blur-md cursor-pointer"
     >
       <div class="bg-white p-6 rounded-3xl max-w-sm w-full flex flex-col items-center shadow-2xl text-center" @click.stop>
-        <span class="text-xs font-bold text-jp-red uppercase tracking-wider">手指溝通卡 · 請向對方展示</span>
+        <span class="text-xs font-bold text-wabi-red uppercase tracking-wider">手指溝通卡 · 請出示給對方</span>
         <h2 class="text-2xl font-black text-slate-900 mt-3 leading-snug">{{ selectedPhrase.jp }}</h2>
         <p class="text-base font-bold text-slate-500 mt-2">（{{ selectedPhrase.zh }}）</p>
         <p class="text-xs text-slate-400 mt-5">輕觸任意處關閉視窗</p>
@@ -592,11 +643,11 @@
           </button>
         </div>
         
-        <div class="w-full bg-slate-50 p-2 rounded-2xl border flex items-center justify-center">
+        <div class="w-full bg-stone-50 p-2 rounded-2xl border flex items-center justify-center">
           <img :src="vjwQr" class="w-full object-contain rounded-xl" />
         </div>
 
-        <p class="text-[11px] text-slate-400 mt-3 text-center">輕觸任意處關閉放大視窗</p>
+        <p class="text-[11px] text-slate-400 mt-3 text-center font-medium">輕觸任意處關閉放大視窗</p>
       </div>
     </div>
 
@@ -604,7 +655,7 @@
     <div v-if="showScheduleModal" class="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-xs">
       <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl max-h-[90vh] overflow-y-auto p-5 space-y-4">
         <div class="flex justify-between items-center border-b pb-2">
-          <h3 class="font-bold text-base text-slate-800">{{ isEditingSchedule ? '編輯行程' : '新增行程' }}</h3>
+          <h3 class="font-black text-base text-slate-800">{{ isEditingSchedule ? '編輯行程' : '新增行程' }}</h3>
           <button @click="showScheduleModal = false" class="text-slate-400 hover:text-slate-600">
             <app-icon name="x" class="w-5 h-5" />
           </button>
@@ -612,8 +663,8 @@
 
         <div class="space-y-3 text-xs">
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">分類</label>
-            <select v-model="modalScheduleForm.category" class="w-full p-2.5 bg-slate-50 border rounded-xl font-bold">
+            <label class="font-bold text-slate-700 block mb-1">分類</label>
+            <select v-model="modalScheduleForm.category" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold">
               <option value="景點">景點</option>
               <option value="住宿">住宿</option>
               <option value="美食">美食</option>
@@ -624,28 +675,28 @@
           </div>
 
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">名稱 / 地點</label>
-            <input v-model="modalScheduleForm.name" type="text" placeholder="例如：金閣寺、HARBS 甜點" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">名稱 / 地點</label>
+            <input v-model="modalScheduleForm.name" type="text" placeholder="例如：金閣寺、HARBS 甜點" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold" />
           </div>
 
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">時間 / 營業時間</label>
-            <input v-model="modalScheduleForm.hours" type="text" placeholder="例如：11:00 - 14:00" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">時間 / 營業時間</label>
+            <input v-model="modalScheduleForm.hours" type="text" placeholder="例如：11:00 - 14:00" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl" />
           </div>
 
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">門票 / 預約代號</label>
-            <input v-model="modalScheduleForm.ticket" type="text" placeholder="例如：門票 600円、訂位代號" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">門票 / 預約代號</label>
+            <input v-model="modalScheduleForm.ticket" type="text" placeholder="例如：門票 600円、訂位代號" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl" />
           </div>
 
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">特色 & 長輩動線備註</label>
-            <textarea v-model="modalScheduleForm.notes" rows="3" placeholder="備註電梯出口、無障礙動線、排隊提醒" class="w-full p-2.5 bg-slate-50 border rounded-xl"></textarea>
+            <label class="font-bold text-slate-700 block mb-1">特色 & 長輩動線備註</label>
+            <textarea v-model="modalScheduleForm.notes" rows="3" placeholder="備註電梯出口、無障礙動線、排隊提醒" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl"></textarea>
           </div>
 
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">Google Maps 搜尋關鍵字或地址</label>
-            <input v-model="modalScheduleForm.address" type="text" placeholder="將用於一鍵導航" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">Google Maps 搜尋關鍵字或日文地址</label>
+            <input v-model="modalScheduleForm.address" type="text" placeholder="輸入日文或地名將用於一鍵精確導航" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl" />
           </div>
         </div>
 
@@ -653,11 +704,11 @@
           <button 
             v-if="isEditingSchedule" 
             @click="confirmDeleteScheduleItem" 
-            class="px-4 py-2.5 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100 transition"
+            class="px-4 py-2.5 bg-rose-50 text-rose-600 font-bold rounded-xl hover:bg-rose-100 transition"
           >
             刪除
           </button>
-          <button @click="saveScheduleItem" class="flex-1 py-2.5 bg-jp-red text-white font-bold rounded-xl hover:bg-jp-crimson transition">
+          <button @click="saveScheduleItem" class="flex-1 py-2.5 bg-wabi-red text-white font-bold rounded-xl hover:bg-wabi-darkred transition">
             儲存
           </button>
         </div>
@@ -668,7 +719,7 @@
     <div v-if="showShoppingModal" class="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-xs">
       <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4">
         <div class="flex justify-between items-center border-b pb-2">
-          <h3 class="font-bold text-base text-slate-800">新增想買物品</h3>
+          <h3 class="font-black text-base text-slate-800">新增想買物品</h3>
           <button @click="showShoppingModal = false">
             <app-icon name="x" class="w-5 h-5 text-slate-400" />
           </button>
@@ -676,23 +727,23 @@
 
         <div class="space-y-3 text-xs">
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">商品名稱</label>
-            <input v-model="shoppingForm.name" type="text" placeholder="例如：合利他命、茅乃舍高湯包" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">商品名稱</label>
+            <input v-model="shoppingForm.name" type="text" placeholder="例如：合利他命、茅乃舍高湯包" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold" />
           </div>
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">上傳商品照片 (自動壓縮)</label>
-            <input type="file" accept="image/*" @change="handleShoppingImageUpload" class="w-full text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:bg-red-50 file:text-jp-red font-bold" />
+            <label class="font-bold text-slate-700 block mb-1">上傳商品照片 (自動壓縮)</label>
+            <input type="file" accept="image/*" @change="handleShoppingImageUpload" class="w-full text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:bg-red-50 file:text-wabi-red font-bold" />
             <div v-if="shoppingForm.image" class="mt-2 w-20 h-20 rounded-xl overflow-hidden border">
               <img :src="shoppingForm.image" class="w-full h-full object-cover" />
             </div>
           </div>
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">規格或備註</label>
-            <input v-model="shoppingForm.notes" type="text" placeholder="數量、尺寸或預算" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">規格或備註</label>
+            <input v-model="shoppingForm.notes" type="text" placeholder="數量、尺寸或預算" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl" />
           </div>
         </div>
 
-        <button @click="saveShoppingItem" class="w-full py-2.5 bg-jp-red text-white font-bold rounded-xl mt-2">
+        <button @click="saveShoppingItem" class="w-full py-2.5 bg-wabi-red text-white font-bold rounded-xl mt-2">
           加入清單
         </button>
       </div>
@@ -702,7 +753,7 @@
     <div v-if="showExpenseModal" class="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-xs">
       <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4">
         <div class="flex justify-between items-center border-b pb-2">
-          <h3 class="font-bold text-base text-slate-800">記帳（新增日幣花費）</h3>
+          <h3 class="font-black text-base text-slate-800">記帳（新增日幣花費）</h3>
           <button @click="showExpenseModal = false">
             <app-icon name="x" class="w-5 h-5 text-slate-400" />
           </button>
@@ -710,8 +761,8 @@
 
         <div class="space-y-3 text-xs">
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">消費類別</label>
-            <select v-model="expenseForm.category" class="w-full p-2.5 bg-slate-50 border rounded-xl font-bold">
+            <label class="font-bold text-slate-700 block mb-1">消費類別</label>
+            <select v-model="expenseForm.category" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold">
               <option value="飲食">飲食</option>
               <option value="交通">交通</option>
               <option value="購物">購物</option>
@@ -722,23 +773,23 @@
           </div>
 
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">花費項目名稱</label>
-            <input v-model="expenseForm.name" type="text" placeholder="例如：便利商店、計程車、藥妝" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">花費項目名稱</label>
+            <input v-model="expenseForm.name" type="text" placeholder="例如：便利商店、計程車、藥妝" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold" />
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="font-semibold text-slate-700 block mb-1">日期</label>
-              <input v-model="expenseForm.date" type="date" class="w-full p-2 bg-slate-50 border rounded-xl" />
+              <label class="font-bold text-slate-700 block mb-1">日期</label>
+              <input v-model="expenseForm.date" type="date" class="w-full p-2 bg-stone-50 border border-stone-200 rounded-xl" />
             </div>
             <div>
-              <label class="font-semibold text-slate-700 block mb-1">金額 (日圓 JPY ¥)</label>
-              <input v-model.number="expenseForm.amount" type="number" placeholder="¥ 金額" class="w-full p-2 bg-slate-50 border rounded-xl font-black text-slate-800" />
+              <label class="font-bold text-slate-700 block mb-1">金額 (日圓 JPY ¥)</label>
+              <input v-model.number="expenseForm.amount" type="number" placeholder="¥ 金額" class="w-full p-2 bg-stone-50 border border-stone-200 rounded-xl font-black text-slate-900" />
             </div>
           </div>
 
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">付款方式</label>
+            <label class="font-bold text-slate-700 block mb-1">付款方式</label>
             <div class="flex gap-4">
               <label class="flex items-center gap-1.5"><input type="radio" value="信用卡" v-model="expenseForm.paymentMethod" /> 信用卡/Apple Pay</label>
               <label class="flex items-center gap-1.5"><input type="radio" value="現金" v-model="expenseForm.paymentMethod" /> 現金日幣</label>
@@ -746,12 +797,12 @@
           </div>
 
           <div>
-            <label class="font-semibold text-slate-700 block mb-1">備註</label>
-            <input v-model="expenseForm.notes" type="text" placeholder="備註細節" class="w-full p-2.5 bg-slate-50 border rounded-xl" />
+            <label class="font-bold text-slate-700 block mb-1">備註</label>
+            <input v-model="expenseForm.notes" type="text" placeholder="備註細節" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl" />
           </div>
         </div>
 
-        <button @click="saveExpenseItem" class="w-full py-2.5 bg-jp-red text-white font-bold rounded-xl mt-2">
+        <button @click="saveExpenseItem" class="w-full py-2.5 bg-wabi-red text-white font-bold rounded-xl mt-2">
           儲存花費
         </button>
       </div>
@@ -762,7 +813,7 @@
   <script>
     const { createApp, ref, computed, onMounted } = Vue;
 
-    // 內嵌完整日本行程資料庫
+    // 日本行程完整資料庫（地圖導航關鍵字全面升級為精準日文漢字）
     const EMBEDDED_TRIP_DATA = {
       title: "Japan Journey 2026",
       subtitle: "關西・南紀勝浦・京都・東京",
@@ -797,25 +848,25 @@
         {
           name: "MIMARU 大阪心齋橋 CENTRAL",
           dates: "11/08 - 11/09 (1晚)",
-          address: "大阪府大阪市中央區南船場4-11-20",
+          address: "大阪府大阪市中央区南船場4-11-20",
           phone: "+81 6-6241-7111"
         },
         {
           name: "TAOYA 那智勝浦（TAOYA Nachikatsuura）",
           dates: "11/09 - 11/11 (2晚)",
-          address: "和歌山縣東牟婁郡那智勝浦町大字勝浦216-19",
+          address: "和歌山県東牟婁郡那智勝浦町勝浦216-19",
           phone: "+81 570-550-078"
         },
         {
           name: "MIMARU 京都 河原町五條",
           dates: "11/11 - 11/13 (2晚)",
-          address: "京都府京都市下京區西石垣通五條下平居町17-1",
+          address: "京都府京都市下京区西石垣通五条下る平居町17-1",
           phone: "+81 75-746-2481"
         },
         {
           name: "東京銀座格蘭巴哈酒店 (Hotel GrandBach Tokyo Ginza)",
           dates: "11/13 - 11/16 (3晚)",
-          address: "東京都中央區銀座5-13-12",
+          address: "東京都中央区銀座5-13-12",
           phone: "+81 3-5550-2222"
         }
       ],
@@ -834,7 +885,7 @@
           location: "大阪",
           hotel: {
             name: "MIMARU 大阪心齋橋 CENTRAL",
-            address: "大阪府大阪市中央區南船場4-11-20"
+            address: "大阪府大阪市中央区南船場4-11-20"
           },
           items: [
             {
@@ -843,15 +894,17 @@
               name: "長榮航空 BR178 抵達關西",
               hours: "06:30 - 09:50",
               notes: "抵達關西機場第一航廈。入境後搭乘南海電鐵特急 Rapi:t 前往難波站。",
-              address: "關西國際機場第一航廈"
+              address: "関西国際空港 第1ターミナル",
+              mapQuery: "関西国際空港"
             },
             {
               id: "d1-hotel-drop",
               category: "住宿",
               name: "MIMARU 大阪心齋橋 寄存行李",
               hours: "約 11:45 抵達",
-              notes: "自難波站轉乘計程車約5分鐘抵達飯店，先放行李輕裝出發。",
-              address: "MIMARU 大阪心齋橋 CENTRAL",
+              notes: "自難波站搭乘計程車約5分鐘抵達飯店，先放行李後輕裝出遊。",
+              address: "大阪府大阪市中央区南船場4-11-20",
+              mapQuery: "MIMARU 大阪 心斎橋 CENTRAL",
               transitModeIcon: "train",
               transitTime: "約 50 分鐘 (南海電鐵 Rapi:t)"
             },
@@ -860,9 +913,10 @@
               category: "景點",
               name: "心齋橋筋・道頓堀周邊平坦散策",
               hours: "12:00 - 17:00",
-              ticket: "免費",
+              ticket: "平緩商店街 · 免門票",
               notes: "拱廊商店街遮陽避雨且全程平坦，長輩可悠閒品嚐章魚燒、喫茶咖啡。",
-              address: "道頓堀 固力果跑跑人",
+              address: "大阪府大阪市中央区道頓堀",
+              mapQuery: "道頓堀 グリコサイン",
               transitModeIcon: "footprints",
               transitTime: "步行約 5 分鐘"
             },
@@ -870,10 +924,12 @@
               id: "d1-dinner",
               category: "美食",
               name: "Yakiniku Ushigoro Umeda (梅田燒肉)",
-              hours: "18:00 - 20:00 (預約完成)",
-              ticket: "訂位代號: PERQZJ / 6位",
+              hours: "18:00 - 20:00 (預約完成 / 6位)",
+              ticket: "專人代烤 · 訂位確認",
+              bookingCode: "PERQZJ",
               notes: "建議自飯店搭計程車直達梅田餐廳，避免長輩在梅田地下迷航。",
-              address: "Yakiniku Ushigoro Umeda, Osaka",
+              address: "大阪府大阪市北区梅田2-2-22",
+              mapQuery: "焼肉うしごろ 梅田店",
               transitModeIcon: "car",
               transitTime: "計程車約 15 分鐘"
             }
@@ -886,7 +942,7 @@
           location: "南紀勝浦",
           hotel: {
             name: "TAOYA 那智勝浦",
-            address: "和歌山縣東牟婁郡那智勝浦町大字勝浦216-19"
+            address: "和歌山県東牟婁郡那智勝浦町勝浦216-19"
           },
           items: [
             {
@@ -895,7 +951,8 @@
               name: "JR 特急黑潮號 (Kuroshio) 景觀鐵道",
               hours: "10:00 - 14:00",
               notes: "從天王寺或新大阪站上車。沿途飽覽和歌山蔚藍太平洋海景，全程舒適安坐。",
-              address: "紀伊勝浦車站",
+              address: "和歌山県東牟婁郡那智勝浦町大字築地６丁目 紀伊勝浦駅",
+              mapQuery: "JR 紀伊勝浦駅",
               transitModeIcon: "train",
               transitTime: "特急列車約 3.5~4 小時"
             },
@@ -904,8 +961,9 @@
               category: "住宿",
               name: "TAOYA 那智勝浦 辦理入住",
               hours: "14:30 抵達勝浦站接駁",
-              notes: "抵達紀伊勝浦站後搭乘專用接駁車前往飯店，享受全包式服務。",
-              address: "TAOYA 那智勝浦",
+              notes: "抵達紀伊勝浦站後搭乘專用接駁車前往飯店，享受全包式溫泉服務。",
+              address: "和歌山県東牟婁郡那智勝浦町勝浦216-19",
+              mapQuery: "TAOYA 那智勝浦",
               transitModeIcon: "bus",
               transitTime: "接駁車約 10 分鐘"
             },
@@ -914,17 +972,19 @@
               category: "景點",
               name: "海景無邊際露天風呂 & Lounge 酒廊",
               hours: "15:30 - 18:00",
-              ticket: "房費全包免費享受",
-              notes: "泡湯欣賞勝浦港海灣夕陽，大廳酒廊免費提供啤酒、飲品與精緻小點。",
-              address: "TAOYA 那智勝浦"
+              ticket: "房客全包式免費服務",
+              notes: "泡湯欣賞勝浦港海灣夕陽，大廳酒廊免費提供生啤酒、軟飲與精緻點心。",
+              address: "TAOYA 那智勝浦",
+              mapQuery: "TAOYA 那智勝浦"
             },
             {
               id: "d2-dinner",
               category: "美食",
               name: "飯店海鮮豪華自助晚宴",
               hours: "18:30 - 20:30",
-              notes: "享用在地生鮪魚、黑毛和牛與現做海鮮料理，輕鬆無負擔。",
-              address: "TAOYA 那智勝浦 餐廳"
+              notes: "享用在地生黑鮪魚、黑毛和牛與現做海鮮料理，步調放鬆無負擔。",
+              address: "TAOYA 那智勝浦",
+              mapQuery: "TAOYA 那智勝浦"
             }
           ]
         },
@@ -935,7 +995,7 @@
           location: "南紀勝浦",
           hotel: {
             name: "TAOYA 那智勝浦",
-            address: "和歌山縣東牟婁郡那智勝浦町大字勝浦216-19"
+            address: "和歌山県東牟婁郡那智勝浦町勝浦216-19"
           },
           items: [
             {
@@ -944,8 +1004,9 @@
               name: "世界遺產熊野那智大社 & 那智之瀧",
               hours: "09:00 - 12:00",
               ticket: "瀧御拜所 300円",
-              notes: "日本第一名瀑。長輩建議乘車直達飛瀧神社入口處，免爬古道大石階梯。",
-              address: "那智瀑布, Nachikatsuura",
+              notes: "日本第一名瀑。長輩建議搭車至飛瀧神社入口處下車，完全避開古道大石階梯。",
+              address: "和歌山県東牟婁郡那智勝浦町那智山 那智の滝",
+              mapQuery: "那智の滝",
               transitModeIcon: "car",
               transitTime: "計程車/專車約 20 分鐘"
             },
@@ -955,7 +1016,8 @@
               name: "勝浦漁港 賑合市場生黑鮪魚午餐",
               hours: "12:30 - 14:00",
               notes: "品嚐全日本第一「不經冷凍、產地直送」的熟成生黑鮪魚丼飯與定食。",
-              address: "勝浦漁港 にぎわい市場",
+              address: "和歌山県東牟婁郡那智勝浦町築地7-12",
+              mapQuery: "勝浦漁港 にぎわい市場",
               transitModeIcon: "car",
               transitTime: "約 15 分鐘"
             },
@@ -964,9 +1026,10 @@
               category: "景點",
               name: "紀之松島遊覽船巡航 (海風休憩)",
               hours: "14:30 - 16:00",
-              ticket: "約 1,600円",
+              ticket: "觀光船票 約 1,600円",
               notes: "平穩坐於遊覽船內欣賞外海奇岩島嶼，免步行極致放鬆。",
-              address: "勝浦港觀光船棧橋",
+              address: "和歌山県東牟婁郡那智勝浦町勝浦 勝浦港観光船のりば",
+              mapQuery: "紀の松島めぐり遊覧船",
               transitModeIcon: "sailboat",
               transitTime: "步行約 3 分鐘"
             },
@@ -976,7 +1039,8 @@
               name: "TAOYA 精緻溫泉百匯晚宴",
               hours: "18:30",
               notes: "返回飯店泡湯放鬆並享用豐盛晚餐。",
-              address: "TAOYA 那智勝浦"
+              address: "TAOYA 那智勝浦",
+              mapQuery: "TAOYA 那智勝浦"
             }
           ]
         },
@@ -987,7 +1051,7 @@
           location: "京都",
           hotel: {
             name: "MIMARU 京都 河原町五條",
-            address: "京都府京都市下京區西石垣通五條下平居町17-1"
+            address: "京都府京都市下京区西石垣通五条下る平居町17-1"
           },
           items: [
             {
@@ -996,7 +1060,8 @@
               name: "JR 特急黑潮號前往古都京都",
               hours: "10:00 - 14:00",
               notes: "紀伊勝浦站出發，安坐車廂內欣賞海岸與鄉村風景，直抵京都站。",
-              address: "京都車站",
+              address: "京都府京都市下京区東塩小路高倉町8-3 京都駅",
+              mapQuery: "JR 京都駅",
               transitModeIcon: "train",
               transitTime: "特急直達約 3.5~4 小時"
             },
@@ -1006,7 +1071,8 @@
               name: "MIMARU 京都 河原町五條 入住",
               hours: "14:30 辦理入住",
               notes: "自京都站搭乘計程車約8分鐘抵達飯店，稍作梳洗休息。",
-              address: "MIMARU 京都 河原町五條",
+              address: "京都府京都市下京区西石垣通五条下る平居町17-1",
+              mapQuery: "MIMARU京都 河原町五条",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
             },
@@ -1015,9 +1081,10 @@
               category: "景點",
               name: "鴨川河畔散策・四條河原町漫步",
               hours: "15:30 - 18:00",
-              ticket: "免費",
+              ticket: "平緩河畔 · 免門票",
               notes: "秋意漸濃的鴨川旁平坦步道，伴隨微風散步拍照非常舒適。",
-              address: "四條大橋 鴨川",
+              address: "京都府京都市下京区 四条大橋",
+              mapQuery: "四条大橋 鴨川",
               transitModeIcon: "footprints",
               transitTime: "步行約 5 分鐘"
             },
@@ -1027,9 +1094,10 @@
               name: "中島家 Kyoto (預約確認 / 6位)",
               hours: "18:30 - 20:30",
               notes: "京都地道精緻家常菜與和風割烹居酒料理，環境舒適雅緻。",
-              address: "中島家 京都",
+              address: "京都府京都市下京区仏光寺通烏丸東入上柳町315-4",
+              mapQuery: "中島家 京都",
               transitModeIcon: "car",
-              transitTime: "步行或計程車短程即達"
+              transitTime: "步行或短程計程車即達"
             }
           ]
         },
@@ -1040,7 +1108,7 @@
           location: "天橋立",
           hotel: {
             name: "MIMARU 京都 河原町五條",
-            address: "京都府京都市下京區西石垣通五條下平居町17-1"
+            address: "京都府京都市下京区西石垣通五条下る平居町17-1"
           },
           items: [
             {
@@ -1049,7 +1117,8 @@
               name: "海之京都 全日專車包車出發",
               hours: "08:00 飯店大廳集合",
               notes: "今日全程專屬包車直達天橋立與伊根，長輩免舟車勞頓與轉車之苦。",
-              address: "MIMARU 京都 河原町五條",
+              address: "京都府京都市下京区西石垣通五条下る平居町17-1",
+              mapQuery: "MIMARU京都 河原町五条",
               transitModeIcon: "car",
               transitTime: "專車前往宮津天橋立約 100 分鐘"
             },
@@ -1059,8 +1128,9 @@
               name: "天橋立 傘松公園 (昇龍觀) & 元伊勢籠神社",
               hours: "09:50 - 11:20",
               ticket: "單軌斜坡車來回約 680円",
-              notes: "搭乘平穩安全的單軌電車直達景觀台，長輩免走陡坡即可俯瞰日本三景。",
-              address: "傘松公園, 宮津市",
+              notes: "搭乘平穩安全的單軌斜坡車直達景觀台，長輩免走陡坡即可俯瞰日本三景。",
+              address: "京都府宮津市字大垣75 傘松公園",
+              mapQuery: "傘松公園 ケーブルカー",
               transitModeIcon: "mountain",
               transitTime: "搭乘斜坡車約 5 分鐘"
             },
@@ -1070,7 +1140,8 @@
               name: "宮津灣海鮮名物午餐",
               hours: "12:00 - 13:00",
               notes: "品嚐丹後若狹灣新鮮海鮮丼、烤魚定食。",
-              address: "天橋立 觀光船碼頭周邊"
+              address: "京都府宮津市文珠 天橋立桟橋周辺",
+              mapQuery: "天橋立桟橋"
             },
             {
               id: "d5-ine-cruise",
@@ -1079,7 +1150,8 @@
               hours: "13:40 - 15:40",
               ticket: "遊船票 1,000円",
               notes: "從海上遠眺230間傳統水上舟屋，船上可餵海鷗。隨後在舟屋咖啡館坐下飲茶。",
-              address: "伊根町舟屋, 京都府",
+              address: "京都府与謝郡伊根町日出11 伊根湾めぐり遊覧船",
+              mapQuery: "伊根湾めぐり遊覧船のりば",
               transitModeIcon: "sailboat",
               transitTime: "包車驅車約 30 分鐘抵達伊根"
             },
@@ -1089,7 +1161,8 @@
               name: "Lugol Kyoto (預約確認 / 4+2位)",
               hours: "19:00 - 21:00",
               notes: "專車約 17:30 返回京都飯店休整，晚間前往精緻餐酒館 Lugol 享用晚餐。",
-              address: "Lugol Kyoto",
+              address: "京都府京都市中京区烏丸通蛸薬師西入る橋弁慶町222",
+              mapQuery: "Lugol Kyoto",
               transitModeIcon: "car",
               transitTime: "計程車約 10 分鐘"
             }
@@ -1102,7 +1175,7 @@
           location: "東京",
           hotel: {
             name: "東京銀座格蘭巴哈酒店",
-            address: "東京都中央區銀座5-13-12"
+            address: "東京都中央区銀座5-13-12"
           },
           items: [
             {
@@ -1110,8 +1183,9 @@
               category: "景點",
               name: "東海道新幹線 Nozomi 前往東京",
               hours: "10:00 - 12:15",
-              notes: "京都站搭乘新幹線直達東京站，平穩疾馳約 2 小時 15 分，車上享受鐵道便當與咖啡。",
-              address: "東京車站",
+              notes: "京都站搭乘新幹線直達東京站，平穩疾馳約 2 小時 15 分，車上享受鐵道便當與熱咖啡。",
+              address: "東京都千代田区丸の内１丁目 東京駅",
+              mapQuery: "JR 東京駅",
               transitModeIcon: "train",
               transitTime: "新幹線 2h 15m"
             },
@@ -1120,8 +1194,9 @@
               category: "住宿",
               name: "銀座格蘭巴哈酒店 入住寄放行李",
               hours: "12:45 抵達飯店",
-              notes: "東京站丸之內或八重洲口搭計程車5分鐘即達飯店。環境雅緻清幽。",
-              address: "Hotel GrandBach Tokyo Ginza",
+              notes: "東京站搭計程車5分鐘即達飯店。環境雅緻清幽，周邊生活機能極佳。",
+              address: "東京都中央区銀座5-13-12",
+              mapQuery: "ホテルグランバッハ東京銀座",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
             },
@@ -1130,9 +1205,10 @@
               category: "景點",
               name: "GINZA SIX、蔦屋書店與銀座大道漫步",
               hours: "14:00 - 18:00",
-              ticket: "免費",
+              ticket: "全平坦商場 · 免門票",
               notes: "GINZA SIX 內部挑高舒適、空調宜人且休息座椅豐富，長輩逛街毫無壓力。",
-              address: "GINZA SIX, Ginza, Tokyo",
+              address: "東京都中央区銀座6-10-1",
+              mapQuery: "GINZA SIX",
               transitModeIcon: "footprints",
               transitTime: "步行約 3 分鐘"
             },
@@ -1142,7 +1218,8 @@
               name: "銀座精緻洋食或壽司輕晚餐",
               hours: "18:30 - 20:00",
               notes: "於銀座四丁目附近享用老舖洋食或板前壽司，散步回飯店。",
-              address: "銀座中央通周邊"
+              address: "東京都中央区銀座４丁目",
+              mapQuery: "銀座四丁目交差点"
             }
           ]
         },
@@ -1153,7 +1230,7 @@
           location: "東京",
           hotel: {
             name: "東京銀座格蘭巴哈酒店",
-            address: "東京都中央區銀座5-13-12"
+            address: "東京都中央区銀座5-13-12"
           },
           items: [
             {
@@ -1161,9 +1238,10 @@
               category: "景點",
               name: "表參道林蔭大道・當代建築巡禮",
               hours: "10:00 - 13:00",
-              ticket: "免費",
+              ticket: "林蔭步道 · 免門票",
               notes: "櫸樹林蔭大道地勢平緩，欣賞大師建築外觀，漫步選品店，步調悠閒。",
-              address: "表參道 Hills",
+              address: "東京都渋谷区神宮前４丁目１２−１０",
+              mapQuery: "表参道ヒルズ",
               transitModeIcon: "car",
               transitTime: "銀座搭計程車約 15 分鐘"
             },
@@ -1172,9 +1250,10 @@
               category: "景點",
               name: "麻布台之丘 (Azabudai Hills) 現代花園漫遊",
               hours: "15:00 - 17:30",
-              ticket: "公共區域免費",
+              ticket: "中央花園 · 免門票",
               notes: "全日本最新地標。中央廣場綠意盎然，全區無障礙電梯與坡道完善，長輩參觀輕鬆舒服。",
-              address: "麻布台 Hills, Tokyo",
+              address: "東京都港区麻布台１丁目３−１",
+              mapQuery: "麻布台ヒルズ",
               transitModeIcon: "car",
               transitTime: "計程車約 10 分鐘"
             },
@@ -1183,9 +1262,11 @@
               category: "美食",
               name: "Ushigoro S 銀座 (頂級和牛私廚 / 6位)",
               hours: "18:30 - 21:00 (預約完成)",
-              ticket: "訂位代號: ZWQR6K / 6位",
+              ticket: "專人代烤 · 頂級全包廂",
+              bookingCode: "ZWQR6K",
               notes: "Ushigoro 旗下最高殿堂全包廂個室服務，專人代烤頂級黑毛和牛全餐。",
-              address: "Ushigoro S. Ginza",
+              address: "東京都中央区銀座7-7-7 銀座777ビル 6F",
+              mapQuery: "USHIGORO S. GINZA",
               transitModeIcon: "car",
               transitTime: "計程車約 10 分鐘返銀座"
             }
@@ -1198,7 +1279,7 @@
           location: "東京",
           hotel: {
             name: "東京銀座格蘭巴哈酒店",
-            address: "東京都中央區銀座5-13-12"
+            address: "東京都中央区銀座5-13-12"
           },
           items: [
             {
@@ -1206,9 +1287,10 @@
               category: "景點",
               name: "丸之內林蔭仲通 & 皇居外苑散步",
               hours: "10:00 - 12:30",
-              ticket: "免費",
+              ticket: "週日步行者天國 · 免門票",
               notes: "星期日丸之內仲通轉為徒步區，可悠閒散步至皇居二重橋與楠木正成銅像拍合照。",
-              address: "皇居外苑 楠木正成銅像",
+              address: "東京都千代田区皇居外苑１−１",
+              mapQuery: "楠木正成像",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
             },
@@ -1218,7 +1300,8 @@
               name: "銀座三越・松屋・伊東屋採買伴手禮",
               hours: "14:30 - 18:00",
               notes: "集中在銀座採購日本銘菓、保養品與文具，退稅櫃台動線清晰，隨時可回飯店放戰利品。",
-              address: "銀座三越 百貨",
+              address: "東京都中央区銀座4-6-16",
+              mapQuery: "銀座三越",
               transitModeIcon: "footprints",
               transitTime: "步行約 4 分鐘"
             },
@@ -1228,7 +1311,8 @@
               name: "銀座割烹或季節天婦羅盛宴",
               hours: "18:30",
               notes: "旅程最後一晚在銀座享用精緻日式割烹或天婦羅，晚間整理行李備戰回程。",
-              address: "銀座周邊"
+              address: "東京都中央区銀座",
+              mapQuery: "銀座駅"
             }
           ]
         },
@@ -1245,7 +1329,8 @@
               name: "飯店退房 ➔ 前往成田機場第二航廈",
               hours: "09:00 - 10:15",
               notes: "建議預約專車接送或搭乘計程車至東京站轉乘 成田特快 N'EX 直達第二航廈。",
-              address: "成田國際機場第二航廈",
+              address: "千葉県成田市古込1-1 成田国際空港 第2ターミナル",
+              mapQuery: "成田国際空港 第2ターミナル",
               transitModeIcon: "train",
               transitTime: "專車/特快約 60~75 分鐘"
             },
@@ -1256,7 +1341,8 @@
               hours: "13:00 - 16:05",
               ticket: "BR183 成田T2 ➔ 桃園T2",
               notes: "10:15 抵達航廈辦理登機、安檢與免稅購物。16:05 順利返抵國門。",
-              address: "成田國際機場第二航廈"
+              address: "成田国際空港 第2ターミナル",
+              mapQuery: "成田国際空港 第2ターミナル"
             }
           ]
         }
@@ -1286,6 +1372,7 @@
           <template v-else-if="name === 'pencil'"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></template>
           <template v-else-if="name === 'clock'"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></template>
           <template v-else-if="name === 'ticket'"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/></template>
+          <template v-else-if="name === 'copy'"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></template>
           <template v-else-if="name === 'qr-code'"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></template>
           <template v-else-if="name === 'maximize-2'"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></template>
           <template v-else-if="name === 'refresh-cw'"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></template>
@@ -1299,6 +1386,7 @@
           <template v-else-if="name === 'sun'"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></template>
           <template v-else-if="name === 'cloud-sun'"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/></template>
           <template v-else-if="name === 'cloud'"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></template>
+          <template v-else-if="name === 'snowflake'"><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></template>
           <template v-else-if="name === 'cloud-rain'"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></template>
           
           <template v-else><circle cx="12" cy="12" r="9"/></template>
@@ -1333,26 +1421,24 @@
         const selectedPhrase = ref(null);
         const openPhraseModal = (ph) => { selectedPhrase.value = ph; };
 
-        // 讀取/儲存行程 (加入空陣列校驗防呆，並重置快取鍵)
+        // 讀取/儲存行程 (多重防呆)
         let savedDays = null;
         try {
-          const raw = localStorage.getItem('jp_trip_v2026_fixed');
+          const raw = localStorage.getItem('jp_trip_v2026_final');
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              savedDays = parsed;
-            }
+            if (Array.isArray(parsed) && parsed.length > 0) savedDays = parsed;
           }
         } catch(e) {}
 
         const itineraryDays = ref(savedDays || tripInfo.value.days);
 
-        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_v3')) || [
+        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_final')) || [
           { id: 's1', name: '合利他命 EX Plus 270錠', notes: '長輩保養用，藥妝店比價', bought: false, image: null },
           { id: 's2', name: '茅乃舍 柴魚高湯包', notes: '煮湯料理極佳，百貨專櫃', bought: false, image: null }
         ]);
 
-        const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_v3')) || [
+        const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_final')) || [
           { id: 'e1', category: '美食', name: '道頓堀午餐與喫茶', date: '2026-11-08', amount: 6500, paymentMethod: '現金', notes: '街頭章魚燒與咖啡' }
         ]);
 
@@ -1361,10 +1447,10 @@
         });
 
         // 匯率系統 (JPY ➔ TWD)
-        const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate_v3')) || 0.215);
+        const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate_final')) || 0.215);
         const inputJpyAmount = ref(10000);
         const isRateLoading = ref(false);
-        const rateLastUpdated = ref(localStorage.getItem('jpy_rate_time_v3') || '預設匯率');
+        const rateLastUpdated = ref(localStorage.getItem('jpy_rate_time_final') || '預設匯率');
 
         const convertedTWD = computed(() => {
           return Math.round((inputJpyAmount.value || 0) * currentJpyRate.value);
@@ -1380,8 +1466,8 @@
               const now = new Date();
               const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
               rateLastUpdated.value = timeStr;
-              localStorage.setItem('cached_jpy_rate_v3', currentJpyRate.value);
-              localStorage.setItem('jpy_rate_time_v3', timeStr);
+              localStorage.setItem('cached_jpy_rate_final', currentJpyRate.value);
+              localStorage.setItem('jpy_rate_time_final', timeStr);
             }
           } catch (e) {
             console.warn('匯率更新失敗');
@@ -1401,7 +1487,7 @@
           '東京': { icon: 'sun', summary: '秋高氣爽 · 晴朗', temp: 17, feelsLike: 16 }
         };
 
-        const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather_v3')) || defaultWeather);
+        const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather_final')) || defaultWeather);
 
         const currentDay = computed(() => {
           return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
@@ -1438,7 +1524,7 @@
 
               const now = new Date();
               weatherLastUpdated.value = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-              localStorage.setItem('cached_jp_weather_v3', JSON.stringify(liveWeatherData.value));
+              localStorage.setItem('cached_jp_weather_final', JSON.stringify(liveWeatherData.value));
             }
           } catch (e) {
             console.warn('氣象讀取異常');
@@ -1447,8 +1533,18 @@
           }
         };
 
+        // 一鍵複製文字
+        const copyText = (txt) => {
+          if (!txt) return;
+          navigator.clipboard.writeText(txt).then(() => {
+            alert(`已複製代號：${txt}`);
+          }).catch(() => {
+            alert(`代號為：${txt}`);
+          });
+        };
+
         // VJW QR Code 壓縮儲存
-        const vjwQr = ref(localStorage.getItem('my_vjw_qr_v3') || null);
+        const vjwQr = ref(localStorage.getItem('my_vjw_qr_final') || null);
         const showFullScreenQr = ref(false);
 
         const compressImg = (file, maxDim, quality, cb) => {
@@ -1474,7 +1570,7 @@
           if (!file) return;
           compressImg(file, 800, 0.8, (base64) => {
             vjwQr.value = base64;
-            localStorage.setItem('my_vjw_qr_v3', base64);
+            localStorage.setItem('my_vjw_qr_final', base64);
           });
         };
 
@@ -1486,7 +1582,6 @@
           });
         };
 
-        // 零延遲換日
         const changeDate = (idx) => { selectedDateIndex.value = idx; };
 
         const openGoogleMap = (query) => {
@@ -1559,7 +1654,7 @@
           } else {
             items.push({ ...modalScheduleForm.value });
           }
-          localStorage.setItem('jp_trip_v2026_fixed', JSON.stringify(itineraryDays.value));
+          localStorage.setItem('jp_trip_v2026_final', JSON.stringify(itineraryDays.value));
           showScheduleModal.value = false;
         };
 
@@ -1568,7 +1663,7 @@
             const items = currentDay.value.items;
             const idx = items.findIndex(i => i.id === modalScheduleForm.value.id);
             if (idx !== -1) items.splice(idx, 1);
-            localStorage.setItem('jp_trip_v2026_fixed', JSON.stringify(itineraryDays.value));
+            localStorage.setItem('jp_trip_v2026_final', JSON.stringify(itineraryDays.value));
             showScheduleModal.value = false;
           }
         };
@@ -1576,33 +1671,32 @@
         const saveShoppingItem = () => {
           if (!shoppingForm.value.name) return;
           shoppingList.value.push({ id: 's-' + Date.now(), ...shoppingForm.value });
-          localStorage.setItem('jp_shopping_v3', JSON.stringify(shoppingList.value));
+          localStorage.setItem('jp_shopping_final', JSON.stringify(shoppingList.value));
           showShoppingModal.value = false;
         };
 
         const deleteShoppingItem = (idx) => {
           if (confirm('確定刪除此項目？')) {
             shoppingList.value.splice(idx, 1);
-            localStorage.setItem('jp_shopping_v3', JSON.stringify(shoppingList.value));
+            localStorage.setItem('jp_shopping_final', JSON.stringify(shoppingList.value));
           }
         };
 
         const saveExpenseItem = () => {
           if (!expenseForm.value.name || !expenseForm.value.amount) return;
           expenses.value.unshift({ id: 'e-' + Date.now(), ...expenseForm.value });
-          localStorage.setItem('jp_expenses_v3', JSON.stringify(expenses.value));
+          localStorage.setItem('jp_expenses_final', JSON.stringify(expenses.value));
           showExpenseModal.value = false;
         };
 
         const deleteExpense = (idx) => {
           if (confirm('確定刪除此紀錄？')) {
             expenses.value.splice(idx, 1);
-            localStorage.setItem('jp_expenses_v3', JSON.stringify(expenses.value));
+            localStorage.setItem('jp_expenses_final', JSON.stringify(expenses.value));
           }
         };
 
         onMounted(() => {
-          // 強制保底檢查：若行程為空，立即賦予內建行程
           if (!itineraryDays.value || itineraryDays.value.length === 0) {
             itineraryDays.value = EMBEDDED_TRIP_DATA.days;
           }
@@ -1625,6 +1719,7 @@
           quickPhrases,
           selectedPhrase,
           openPhraseModal,
+          copyText,
           vjwQr,
           showFullScreenQr,
           handleVjwUpload,
