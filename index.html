@@ -55,13 +55,23 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     body { -webkit-tap-highlight-color: transparent; }
-    .elderly-mode { font-size: 118% !important; }
+    
+    /* 徹底修正大字體模式：全面穿透 Tailwind 絕對字級，確保立竿見影放大 */
+    .elderly-mode {
+      zoom: 1.15;
+    }
+    @supports not (zoom: 1) {
+      .elderly-mode * {
+        font-size: 1.15em !important;
+        line-height: 1.4 !important;
+      }
+    }
   </style>
 </head>
 
 <body class="bg-stone-100 flex justify-center min-h-screen text-slate-800 font-sans antialiased">
 
-  <div id="app" :class="isElderlyMode ? 'elderly-mode' : ''" class="w-full max-w-[480px] min-h-screen bg-wabi-bg shadow-2xl relative pb-28 flex flex-col">
+  <div id="app" :class="isElderlyMode ? 'elderly-mode' : ''" class="w-full max-w-[480px] min-h-screen bg-wabi-bg shadow-2xl relative pb-28 flex flex-col transition-all duration-150">
 
     <!-- 頂部 Hero 區域 -->
     <header class="relative h-56 w-full overflow-hidden bg-slate-900 flex-shrink-0">
@@ -85,12 +95,13 @@
           <p class="text-xs text-slate-200 mt-0.5 font-medium">{{ tripInfo.subtitle }}</p>
         </div>
 
+        <!-- 一鍵切換長輩大字模式 -->
         <button 
-          @click="isElderlyMode = !isElderlyMode" 
-          class="px-2.5 py-1 rounded-full text-xs font-bold transition flex items-center gap-1 border border-white/30 backdrop-blur-md"
-          :class="isElderlyMode ? 'bg-amber-400 text-slate-900 border-amber-300 shadow-md' : 'bg-black/35 text-white'"
+          @click="toggleElderlyMode" 
+          class="px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1 border backdrop-blur-md shadow-xs active:scale-95"
+          :class="isElderlyMode ? 'bg-amber-400 text-slate-950 border-amber-300 font-black' : 'bg-black/40 text-white border-white/30'"
         >
-          <span>Aa</span>
+          <span class="text-sm">Aa</span>
           <span>{{ isElderlyMode ? '標準字' : '大字體' }}</span>
         </button>
       </div>
@@ -115,7 +126,7 @@
 
       <!-- ================= 1. 每日行程表 ================= -->
       <section v-show="currentTab === 'schedule'">
-        <!-- 日期滑動列 (加入週末標籤醒目色) -->
+        <!-- 日期滑動列 -->
         <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-3 pt-0.5">
           <button 
             v-for="(day, index) in itineraryDays" 
@@ -193,7 +204,7 @@
               <div class="h-px bg-slate-200 flex-1"></div>
             </div>
 
-            <!-- 航班專用卡片 -->
+            <!-- 航班卡片 -->
             <div 
               v-if="item.category === '航班'" 
               class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md relative border border-slate-700"
@@ -262,7 +273,7 @@
                 {{ item.notes }}
               </div>
 
-              <!-- 底部按鈕區：Google Maps 精確導航 -->
+              <!-- 底部按鈕區：Google Maps 導航 -->
               <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end">
                 <button 
                   @click.stop="openGoogleMap(item.mapQuery || item.address || item.name)"
@@ -282,7 +293,7 @@
       <!-- ================= 2. 資訊頁 (i) ================= -->
       <section v-show="currentTab === 'info'" class="space-y-4">
         
-        <!-- 【孝親專用】長輩常用手指日語會話卡 (點擊彈出大字) -->
+        <!-- 長輩常用手指日語會話卡 (點擊彈出大字) -->
         <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex items-center gap-2">
@@ -454,7 +465,7 @@
           </div>
         </div>
 
-        <!-- 【重大修正】日本緊急救助、醫療與觀光諮詢專線 -->
+        <!-- 日本緊急救助、醫療與觀光諮詢專線 -->
         <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center gap-2 mb-3">
             <div class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
@@ -516,11 +527,14 @@
           <span class="text-xs text-slate-400 font-bold">共 {{ shoppingList.length }} 項</span>
         </div>
 
-        <div v-if="shoppingList.length === 0" class="text-center py-16 text-slate-400 text-sm font-medium">
-          點擊右下角「+」按鈕新增想買的物品與照片
+        <!-- 初始清空提示 -->
+        <div v-if="shoppingList.length === 0" class="text-center py-16 text-slate-400 text-sm font-medium bg-white rounded-2xl border border-dashed border-stone-300">
+          <app-icon name="shopping-bag" class="w-10 h-10 mx-auto text-stone-300 mb-2" />
+          <p>目前尚無想買物品清單</p>
+          <p class="text-xs text-stone-400 mt-1">請點擊右下角「+」按鈕新增物品與拍照</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div v-else class="grid grid-cols-2 gap-3">
           <div 
             v-for="(item, sIdx) in shoppingList" 
             :key="item.id" 
@@ -543,7 +557,7 @@
               </div>
               <div class="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-xs">
                 <label class="flex items-center gap-1.5 text-slate-600 cursor-pointer font-medium">
-                  <input type="checkbox" v-model="item.bought" class="rounded text-wabi-red" />
+                  <input type="checkbox" v-model="item.bought" @change="persistShopping" class="rounded text-wabi-red" />
                   <span :class="item.bought ? 'line-through text-slate-400' : ''">已購買</span>
                 </label>
               </div>
@@ -571,11 +585,12 @@
             <span class="text-xs text-slate-400 font-medium">最新在最前</span>
           </div>
 
+          <!-- 初始清空提示 -->
           <div v-if="expenses.length === 0" class="text-center py-12 text-slate-400 text-xs font-medium">
             目前尚無花費記錄，請按右下角「+」記帳
           </div>
 
-          <div class="divide-y divide-slate-100">
+          <div v-else class="divide-y divide-slate-100">
             <div v-for="(exp, eIdx) in expenses" :key="exp.id" class="py-3 flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-stone-100 flex items-center justify-center text-slate-600">
@@ -622,7 +637,7 @@
         <span class="text-xs font-bold text-wabi-red uppercase tracking-wider">手指溝通卡 · 請出示給對方</span>
         <h2 class="text-2xl font-black text-slate-900 mt-3 leading-snug">{{ selectedPhrase.jp }}</h2>
         <p class="text-base font-bold text-slate-500 mt-2">（{{ selectedPhrase.zh }}）</p>
-        <p class="text-xs text-slate-400 mt-5">輕觸任意處關閉視窗</p>
+        <p class="text-xs text-slate-400 mt-5 font-medium">輕觸任意處關閉視窗</p>
       </div>
     </div>
 
@@ -813,7 +828,7 @@
   <script>
     const { createApp, ref, computed, onMounted } = Vue;
 
-    // 日本行程完整資料庫（地圖導航關鍵字全面升級為精準日文漢字）
+    // 日本行程完整資料庫
     const EMBEDDED_TRIP_DATA = {
       title: "Japan Journey 2026",
       subtitle: "關西・南紀勝浦・京都・東京",
@@ -1399,7 +1414,13 @@
         const tripInfo = ref(EMBEDDED_TRIP_DATA);
         const currentTab = ref('schedule');
         const selectedDateIndex = ref(0);
-        const isElderlyMode = ref(false);
+        
+        // 長輩大字模式（持久化於本地）
+        const isElderlyMode = ref(localStorage.getItem('jp_elderly_mode') === 'true');
+        const toggleElderlyMode = () => {
+          isElderlyMode.value = !isElderlyMode.value;
+          localStorage.setItem('jp_elderly_mode', isElderlyMode.value);
+        };
 
         const tabs = [
           { id: 'schedule', name: '每日行程', icon: 'map-pin' },
@@ -1421,10 +1442,10 @@
         const selectedPhrase = ref(null);
         const openPhraseModal = (ph) => { selectedPhrase.value = ph; };
 
-        // 讀取/儲存行程 (多重防呆)
+        // 行程資料 (多重防呆，確保必定有 9 天)
         let savedDays = null;
         try {
-          const raw = localStorage.getItem('jp_trip_v2026_final');
+          const raw = localStorage.getItem('jp_trip_v2026_clean');
           if (raw) {
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed) && parsed.length > 0) savedDays = parsed;
@@ -1433,24 +1454,19 @@
 
         const itineraryDays = ref(savedDays || tripInfo.value.days);
 
-        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_final')) || [
-          { id: 's1', name: '合利他命 EX Plus 270錠', notes: '長輩保養用，藥妝店比價', bought: false, image: null },
-          { id: 's2', name: '茅乃舍 柴魚高湯包', notes: '煮湯料理極佳，百貨專櫃', bought: false, image: null }
-        ]);
-
-        const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_final')) || [
-          { id: 'e1', category: '美食', name: '道頓堀午餐與喫茶', date: '2026-11-08', amount: 6500, paymentMethod: '現金', notes: '街頭章魚燒與咖啡' }
-        ]);
+        // 徹底清空必買清單與記帳預設項目（初始無任何資訊）
+        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_clean')) || []);
+        const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_clean')) || []);
 
         const totalExpenseJPY = computed(() => {
           return expenses.value.reduce((acc, cur) => acc + (Number(cur.amount) || 0), 0);
         });
 
         // 匯率系統 (JPY ➔ TWD)
-        const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate_final')) || 0.215);
+        const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate_clean')) || 0.215);
         const inputJpyAmount = ref(10000);
         const isRateLoading = ref(false);
-        const rateLastUpdated = ref(localStorage.getItem('jpy_rate_time_final') || '預設匯率');
+        const rateLastUpdated = ref(localStorage.getItem('jpy_rate_time_clean') || '預設匯率');
 
         const convertedTWD = computed(() => {
           return Math.round((inputJpyAmount.value || 0) * currentJpyRate.value);
@@ -1466,8 +1482,8 @@
               const now = new Date();
               const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
               rateLastUpdated.value = timeStr;
-              localStorage.setItem('cached_jpy_rate_final', currentJpyRate.value);
-              localStorage.setItem('jpy_rate_time_final', timeStr);
+              localStorage.setItem('cached_jpy_rate_clean', currentJpyRate.value);
+              localStorage.setItem('jpy_rate_time_clean', timeStr);
             }
           } catch (e) {
             console.warn('匯率更新失敗');
@@ -1487,7 +1503,7 @@
           '東京': { icon: 'sun', summary: '秋高氣爽 · 晴朗', temp: 17, feelsLike: 16 }
         };
 
-        const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather_final')) || defaultWeather);
+        const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather_clean')) || defaultWeather);
 
         const currentDay = computed(() => {
           return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
@@ -1524,7 +1540,7 @@
 
               const now = new Date();
               weatherLastUpdated.value = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-              localStorage.setItem('cached_jp_weather_final', JSON.stringify(liveWeatherData.value));
+              localStorage.setItem('cached_jp_weather_clean', JSON.stringify(liveWeatherData.value));
             }
           } catch (e) {
             console.warn('氣象讀取異常');
@@ -1544,7 +1560,7 @@
         };
 
         // VJW QR Code 壓縮儲存
-        const vjwQr = ref(localStorage.getItem('my_vjw_qr_final') || null);
+        const vjwQr = ref(localStorage.getItem('my_vjw_qr_clean') || null);
         const showFullScreenQr = ref(false);
 
         const compressImg = (file, maxDim, quality, cb) => {
@@ -1570,7 +1586,7 @@
           if (!file) return;
           compressImg(file, 800, 0.8, (base64) => {
             vjwQr.value = base64;
-            localStorage.setItem('my_vjw_qr_final', base64);
+            localStorage.setItem('my_vjw_qr_clean', base64);
           });
         };
 
@@ -1654,7 +1670,7 @@
           } else {
             items.push({ ...modalScheduleForm.value });
           }
-          localStorage.setItem('jp_trip_v2026_final', JSON.stringify(itineraryDays.value));
+          localStorage.setItem('jp_trip_v2026_clean', JSON.stringify(itineraryDays.value));
           showScheduleModal.value = false;
         };
 
@@ -1663,36 +1679,42 @@
             const items = currentDay.value.items;
             const idx = items.findIndex(i => i.id === modalScheduleForm.value.id);
             if (idx !== -1) items.splice(idx, 1);
-            localStorage.setItem('jp_trip_v2026_final', JSON.stringify(itineraryDays.value));
+            localStorage.setItem('jp_trip_v2026_clean', JSON.stringify(itineraryDays.value));
             showScheduleModal.value = false;
           }
+        };
+
+        // 購物持久化
+        const persistShopping = () => {
+          localStorage.setItem('jp_shopping_clean', JSON.stringify(shoppingList.value));
         };
 
         const saveShoppingItem = () => {
           if (!shoppingForm.value.name) return;
           shoppingList.value.push({ id: 's-' + Date.now(), ...shoppingForm.value });
-          localStorage.setItem('jp_shopping_final', JSON.stringify(shoppingList.value));
+          persistShopping();
           showShoppingModal.value = false;
         };
 
         const deleteShoppingItem = (idx) => {
           if (confirm('確定刪除此項目？')) {
             shoppingList.value.splice(idx, 1);
-            localStorage.setItem('jp_shopping_final', JSON.stringify(shoppingList.value));
+            persistShopping();
           }
         };
 
+        // 記帳持久化
         const saveExpenseItem = () => {
           if (!expenseForm.value.name || !expenseForm.value.amount) return;
           expenses.value.unshift({ id: 'e-' + Date.now(), ...expenseForm.value });
-          localStorage.setItem('jp_expenses_final', JSON.stringify(expenses.value));
+          localStorage.setItem('jp_expenses_clean', JSON.stringify(expenses.value));
           showExpenseModal.value = false;
         };
 
         const deleteExpense = (idx) => {
           if (confirm('確定刪除此紀錄？')) {
             expenses.value.splice(idx, 1);
-            localStorage.setItem('jp_expenses_final', JSON.stringify(expenses.value));
+            localStorage.setItem('jp_expenses_clean', JSON.stringify(expenses.value));
           }
         };
 
@@ -1716,6 +1738,7 @@
           weatherLastUpdated,
           fetchLiveWeather,
           isElderlyMode,
+          toggleElderlyMode,
           quickPhrases,
           selectedPhrase,
           openPhraseModal,
@@ -1747,6 +1770,7 @@
           handleShoppingImageUpload,
           saveShoppingItem,
           deleteShoppingItem,
+          persistShopping,
           saveExpenseItem,
           deleteExpense,
           categoryBadgeColor,
