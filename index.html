@@ -292,7 +292,7 @@
       <!-- ================= 2. 資訊頁 (i) ================= -->
       <section v-show="currentTab === 'info'" class="space-y-4">
         
-        <!-- 長輩常用手指日語會話卡 (點擊彈出大字 + 真人發音) -->
+        <!-- 長輩常用手指日語會話卡 (含雙保險語音播放) -->
         <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex items-center gap-2">
@@ -522,18 +522,85 @@
       </section>
 
 
-      <!-- ================= 3. 購物清單 (購物籃) ================= -->
+      <!-- ================= 3. 必買清單 (城市動態切換 + 個人採購籃) ================= -->
       <section v-show="currentTab === 'shopping'" class="space-y-4">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="text-base font-black text-slate-800">日本必買清單</h2>
-          <span class="text-xs text-slate-400 font-bold">共 {{ shoppingList.length }} 項</span>
+        
+        <!-- 城市選單膠囊列 (隨行程自動感應或自由手動切換) -->
+        <div class="bg-white p-3 rounded-2xl shadow-2xs border border-wabi-border">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-black text-slate-800 flex items-center gap-1">
+              <app-icon name="map-pin" class="w-3.5 h-3.5 text-wabi-red" />
+              <span>當季伴手禮推薦（依城市靈活切換）</span>
+            </span>
+            <span class="text-[10px] bg-red-50 text-wabi-red px-2 py-0.5 rounded-full font-bold">點擊一鍵加入</span>
+          </div>
+
+          <div class="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <button 
+              v-for="city in availableCities" 
+              :key="city"
+              @click="activeShoppingCity = city"
+              :class="activeShoppingCity === city 
+                ? 'bg-wabi-red text-white font-black shadow-xs' 
+                : 'bg-stone-100 text-slate-600 hover:bg-stone-200 font-medium'"
+              class="px-3 py-1.5 rounded-full text-xs shrink-0 transition"
+            >
+              {{ city }}
+            </button>
+          </div>
         </div>
 
-        <!-- 初始清空提示 -->
-        <div v-if="shoppingList.length === 0" class="text-center py-16 text-slate-400 text-sm font-medium bg-white rounded-2xl border border-dashed border-stone-300">
-          <app-icon name="shopping-bag" class="w-10 h-10 mx-auto text-stone-300 mb-2" />
-          <p>目前尚無想買物品清單</p>
-          <p class="text-xs text-stone-400 mt-1">請點擊右下角「+」按鈕新增物品與拍照</p>
+        <!-- 當前城市必買推薦卡片區 -->
+        <div class="space-y-2.5">
+          <div class="flex justify-between items-center px-1">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wide">
+              {{ activeShoppingCity === '全部' ? '全日本精選名產' : activeShoppingCity + ' 特產推薦' }}
+            </h3>
+            <span class="text-[10px] text-slate-400">共 {{ filteredRecommendations.length }} 款特產</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div 
+              v-for="rec in filteredRecommendations" 
+              :key="rec.name"
+              class="bg-white rounded-2xl p-3 border border-wabi-border shadow-2xs flex flex-col justify-between hover:border-wabi-red/40 transition"
+            >
+              <div>
+                <div class="flex justify-between items-start gap-1">
+                  <span class="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-bold shrink-0">{{ rec.city }}</span>
+                  <span class="text-[10px] text-wabi-red font-semibold shrink-0">{{ rec.tag }}</span>
+                </div>
+                <h4 class="font-black text-sm text-slate-800 mt-1.5 leading-snug">{{ rec.name }}</h4>
+                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">{{ rec.desc }}</p>
+                <div class="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                  <app-icon name="map-pin" class="w-3 h-3 text-stone-400" />
+                  <span class="truncate">{{ rec.location }}</span>
+                </div>
+              </div>
+
+              <button 
+                @click="addRecommendedToShopping(rec)"
+                class="mt-3 w-full py-1.5 bg-red-50 hover:bg-red-100 text-wabi-red font-bold text-xs rounded-xl border border-red-200 flex items-center justify-center gap-1 transition active:scale-95"
+              >
+                <app-icon name="plus" class="w-3.5 h-3.5" />
+                <span>加入採購單</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 區隔線 -->
+        <div class="flex items-center gap-2 py-1">
+          <div class="h-px bg-stone-200 flex-1"></div>
+          <span class="text-[11px] font-bold text-slate-400">我的個人採購籃 ({{ shoppingList.length }})</span>
+          <div class="h-px bg-stone-200 flex-1"></div>
+        </div>
+
+        <!-- 個人自訂想買清單 -->
+        <div v-if="shoppingList.length === 0" class="text-center py-10 text-slate-400 text-xs font-medium bg-white rounded-2xl border border-dashed border-stone-300">
+          <app-icon name="shopping-bag" class="w-8 h-8 mx-auto text-stone-300 mb-2" />
+          <p>個人清單目前為空</p>
+          <p class="text-[11px] text-stone-400 mt-1">從上方點擊「+ 加入採購單」，或右下角自行拍照新增</p>
         </div>
 
         <div v-else class="grid grid-cols-2 gap-3">
@@ -542,17 +609,17 @@
             :key="item.id" 
             class="bg-white rounded-2xl overflow-hidden shadow-2xs border border-wabi-border flex flex-col"
           >
-            <div class="w-full h-32 bg-stone-100 relative overflow-hidden flex items-center justify-center">
+            <div class="w-full h-28 bg-stone-100 relative overflow-hidden flex items-center justify-center">
               <img v-if="item.image" :src="item.image" class="w-full h-full object-cover" />
               <div v-else class="flex flex-col items-center text-slate-300">
-                <app-icon name="image" class="w-8 h-8" />
-                <span class="text-[10px] mt-1 font-medium">無照片</span>
+                <app-icon name="image" class="w-7 h-7" />
+                <span class="text-[10px] mt-1 font-medium">自訂物品</span>
               </div>
               <button @click="deleteShoppingItem(sIdx)" class="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1">
                 <app-icon name="x" class="w-3.5 h-3.5" />
               </button>
             </div>
-            <div class="p-3 flex-1 flex flex-col justify-between">
+            <div class="p-2.5 flex-1 flex flex-col justify-between">
               <div>
                 <h4 class="font-bold text-slate-800 text-sm truncate">{{ item.name }}</h4>
                 <p v-if="item.notes" class="text-slate-500 text-xs mt-0.5 line-clamp-2 leading-relaxed">{{ item.notes }}</p>
@@ -587,7 +654,6 @@
             <span class="text-xs text-slate-400 font-medium">最新在最前</span>
           </div>
 
-          <!-- 初始清空提示 -->
           <div v-if="expenses.length === 0" class="text-center py-12 text-slate-400 text-xs font-medium">
             目前尚無花費記錄，請按右下角「+」記帳
           </div>
@@ -629,7 +695,7 @@
       <app-icon name="plus" class="w-7 h-7" />
     </button>
 
-    <!-- 彈出視窗：長輩手指日語大字燈箱 (含真人發音功能) -->
+    <!-- 彈出視窗：長輩手指日語大字燈箱 (雙保險真人語音) -->
     <div 
       v-if="selectedPhrase" 
       @click="selectedPhrase = null" 
@@ -641,7 +707,7 @@
         <h2 class="text-2xl font-black text-slate-900 mt-3 leading-snug">{{ selectedPhrase.jp }}</h2>
         <p class="text-base font-bold text-slate-500 mt-2">（{{ selectedPhrase.zh }}）</p>
 
-        <!-- 播放日語發音按鈕 -->
+        <!-- 播放發音按鈕 -->
         <button 
           @click="speakJapanese(selectedPhrase.jp)"
           class="mt-5 px-5 py-2.5 bg-red-50 hover:bg-red-100 text-wabi-red font-black text-sm rounded-full flex items-center gap-2 border border-red-200 transition active:scale-95 shadow-xs"
@@ -839,9 +905,9 @@
   </div>
 
   <script>
-    const { createApp, ref, computed, onMounted } = Vue;
+    const { createApp, ref, computed, onMounted, watch } = Vue;
 
-    // 日本行程完整資料庫
+    // 行程資料庫
     const EMBEDDED_TRIP_DATA = {
       title: "Japan Journey 2026",
       subtitle: "關西・南紀勝浦・京都・東京",
@@ -1377,6 +1443,33 @@
       ]
     };
 
+    // 精選城市伴手禮推薦庫（長輩友善、常溫便攜、各城市地道首選）
+    const CITY_SOUVENIRS = [
+      // 大阪
+      { city: '大阪', name: "Bâton d'or 頂級奶油酥條", desc: "固力果旗艦排隊名菓，濃醇發酵奶油香氣，老少咸宜。", tag: "百貨限定", location: "阪急梅田 / 難波高島屋" },
+      { city: '大阪', name: "一心堂 水果大福", desc: "嚴選季節完熟哈密瓜、水蜜桃，外皮軟糯清甜不膩。", tag: "長輩最愛", location: "阪急百貨梅田總店 B1" },
+      { city: '大阪', name: "呼吸巧克力 (呼吸チョコ)", desc: "杏仁外裹醇濃馬斯卡彭起司巧克力，曾獲全國菓子大賞。", tag: "經典伴手", location: "關西機場免稅 / 難波站" },
+      { city: '大阪', name: "551 蓬萊 鮮肉包 / 燒賣", desc: "大阪靈魂美食，長輩回飯店當宵夜的絕佳點心。", tag: "現做美味", location: "新大阪 / 梅田 / 難波站" },
+      
+      // 和歌山勝浦
+      { city: '南紀勝浦', name: "紀州南高梅 (蜂蜜/減鹽)", desc: "和歌山特產頂級梅干，肉厚柔嫩，健康生津開胃。", tag: "養生首選", location: "勝浦漁港市場 / 飯店賣店" },
+      { city: '南紀勝浦', name: "熟成生黑鮪魚 角煮/佃煮", desc: "勝浦產地直送鮮黑鮪魚特調佃煮，常溫真空好攜帶，配粥絕品。", tag: "產地直送", location: "勝浦漁港 にぎわい市場" },
+      { city: '南紀勝浦', name: "那智黑飴 (熊野黑糖名菓)", desc: "以熊野黑石為意象，古法熬煉天然純黑糖，潤喉爽口。", tag: "名勝名產", location: "那智瀑布參道 / 勝浦車站" },
+      { city: '南紀勝浦', name: "和歌山 溫州蜜柑汁/果醬", desc: "100% 完熟蜜柑純榨，香甜醇厚，富含天然維他命 C。", tag: "天然無添加", location: "紀伊勝浦車站土產專櫃" },
+
+      // 京都 & 天橋立
+      { city: '京都', name: "丸久小山園 / 辻利 宇治抹茶", desc: "京都百年茶舖精選抹茶粉、烘焙茶茶包，香氣高雅回甘。", tag: "茶道名門", location: "京都站 / 四條河原町" },
+      { city: '京都', name: "原了郭 黑七味粉 (木筒裝)", desc: "宮內省御用調味，烘焙研磨七香，灑在蕎麥麵或火鍋上極香。", tag: "百年調味", location: "京都車站伴手禮街 / 祇園" },
+      { city: '京都', name: "茅乃舍 經典純天然高湯包", desc: "烤飛魚與柴魚黃金比例，長輩回台煮湯下麵秒變大廚。", tag: "廚房必備", location: "大丸京都店 / 高島屋專櫃" },
+      { city: '天橋立', name: "丹後 黑豆米果仙貝", desc: "天橋立沿海丹後產黑大豆製成，鹹香酥脆，高纖無負擔。", tag: "海之京都", location: "傘松公園賣店 / 伊根觀光船碼頭" },
+
+      // 東京銀座
+      { city: '東京', name: "銀座木村屋 酒種紅豆麵包", desc: "1874 年明治天皇御用名物，天然酒種發酵外皮與綿密紅豆餡。", tag: "明治老舖", location: "銀座四丁目 木村屋總本店" },
+      { city: '東京', name: "NewYork Perfect Cheese", desc: "白巧克力、切達起司與貓舌餅乾完美融合，全東京最熱門伴手禮。", tag: "排隊冠軍", location: "東京車站內 南通路特設櫃" },
+      { city: '東京', name: "合利他命 EX Plus 270錠", desc: "舒緩眼睛疲勞、腰酸背痛，長輩日本藥妝必帶保養品。", tag: "長輩常備", location: "銀座松本清 / 堂吉訶德" },
+      { city: '東京', name: "銀座松屋/三越 地下街老舖銘菓", desc: "資生堂 Parlour 花椿餅乾、小形羊羹，包裝極盡雅緻尊榮。", tag: "頂級送禮", location: "銀座三越 / 松屋銀座 B1" }
+    ];
+
     // 純 SVG 原生元件
     const AppIcon = {
       props: ['name'],
@@ -1455,21 +1548,46 @@
 
         const selectedPhrase = ref(null);
 
-        // 真人日語語音合成發音函式
-        const speakJapanese = (text) => {
-          if (!('speechSynthesis' in window)) {
-            alert('此手機瀏覽器不支援直接發音功能。');
-            return;
+        // 雙保險真人語音播放機制 (支援原生 API + 雲端語音保底)
+        const playFallbackAudio = (text) => {
+          try {
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=ja&client=tw-ob`;
+            const audio = new Audio(url);
+            audio.play().catch(() => {
+              console.warn('音訊播放需使用者手動點擊觸發');
+            });
+          } catch(e) {
+            console.error('音訊保底異常', e);
           }
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = 'ja-JP';
-          utterance.rate = 0.85; // 稍慢，咬字清晰
-          utterance.pitch = 1.0;
-          window.speechSynthesis.speak(utterance);
         };
 
-        // 開啟燈箱並自動播放一次發音
+        const speakJapanese = (text) => {
+          if (!text) return;
+
+          // 原生 Speech API 嘗試
+          if (window.speechSynthesis) {
+            try {
+              window.speechSynthesis.cancel();
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.lang = 'ja-JP';
+              utterance.rate = 0.85; // 稍慢清晰
+              utterance.pitch = 1.0;
+              
+              utterance.onerror = () => {
+                playFallbackAudio(text);
+              };
+
+              window.speechSynthesis.speak(utterance);
+              return;
+            } catch(e) {
+              console.warn('原生語音異常，轉入保底音訊', e);
+            }
+          }
+
+          // 保底語音
+          playFallbackAudio(text);
+        };
+
         const openPhraseModal = (ph) => {
           selectedPhrase.value = ph;
           speakJapanese(ph.jp);
@@ -1487,13 +1605,47 @@
 
         const itineraryDays = ref(savedDays || tripInfo.value.days);
 
-        // 徹底清空必買清單與記帳預設項目
-        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_clean')) || []);
+        // 伴手禮靈感推薦動態連動
+        const availableCities = ['全部', '大阪', '南紀勝浦', '京都', '天橋立', '東京'];
+        const activeShoppingCity = ref('全部');
+
+        const currentDay = computed(() => {
+          return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
+        });
+
+        // 監聽行程選取的城市，自動切換至該城市的伴手禮推薦
+        watch(() => currentDay.value?.location, (newLoc) => {
+          if (newLoc && availableCities.includes(newLoc)) {
+            activeShoppingCity.value = newLoc;
+          }
+        }, { immediate: true });
+
+        const filteredRecommendations = computed(() => {
+          if (activeShoppingCity.value === '全部') {
+            return CITY_SOUVENIRS;
+          }
+          return CITY_SOUVENIRS.filter(item => item.city === activeShoppingCity.value);
+        });
+
+        // 個人自訂採購籃（初始乾淨為空）
+        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_user_list')) || []);
         const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_clean')) || []);
 
         const totalExpenseJPY = computed(() => {
           return expenses.value.reduce((acc, cur) => acc + (Number(cur.amount) || 0), 0);
         });
+
+        // 一鍵將推薦項目加入個人採購清單
+        const addRecommendedToShopping = (rec) => {
+          shoppingList.value.push({
+            id: 'rec-' + Date.now(),
+            name: `${rec.name} (${rec.city})`,
+            notes: `${rec.desc} · 推薦地點：${rec.location}`,
+            image: null,
+            bought: false
+          });
+          persistShopping();
+        };
 
         // 匯率系統 (JPY ➔ TWD)
         const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate_clean')) || 0.215);
@@ -1537,10 +1689,6 @@
         };
 
         const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather_clean')) || defaultWeather);
-
-        const currentDay = computed(() => {
-          return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
-        });
 
         const currentDayWeather = computed(() => {
           const loc = currentDay.value?.location || '大阪';
@@ -1719,7 +1867,7 @@
 
         // 購物持久化
         const persistShopping = () => {
-          localStorage.setItem('jp_shopping_clean', JSON.stringify(shoppingList.value));
+          localStorage.setItem('jp_shopping_user_list', JSON.stringify(shoppingList.value));
         };
 
         const saveShoppingItem = () => {
@@ -1786,6 +1934,10 @@
           isRateLoading,
           rateLastUpdated,
           fetchLiveRates,
+          availableCities,
+          activeShoppingCity,
+          filteredRecommendations,
+          addRecommendedToShopping,
           shoppingList,
           expenses,
           totalExpenseJPY,
