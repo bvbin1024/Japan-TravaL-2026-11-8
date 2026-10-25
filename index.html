@@ -56,7 +56,7 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     body { -webkit-tap-highlight-color: transparent; }
     
-    /* 徹底修正大字體模式：全面穿透 Tailwind 絕對字級，確保立竿見影放大 */
+    /* 大字體模式 */
     .elderly-mode {
       zoom: 1.15;
     }
@@ -95,7 +95,6 @@
           <p class="text-xs text-slate-200 mt-0.5 font-medium">{{ tripInfo.subtitle }}</p>
         </div>
 
-        <!-- 一鍵切換長輩大字模式 -->
         <button 
           @click="toggleElderlyMode" 
           class="px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1 border backdrop-blur-md shadow-xs active:scale-95"
@@ -204,7 +203,7 @@
               <div class="h-px bg-slate-200 flex-1"></div>
             </div>
 
-            <!-- 航班卡片 -->
+            <!-- 航班專用卡片 -->
             <div 
               v-if="item.category === '航班'" 
               class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md relative border border-slate-700"
@@ -293,16 +292,16 @@
       <!-- ================= 2. 資訊頁 (i) ================= -->
       <section v-show="currentTab === 'info'" class="space-y-4">
         
-        <!-- 長輩常用手指日語會話卡 (點擊彈出大字) -->
+        <!-- 長輩常用手指日語會話卡 (點擊彈出大字 + 真人發音) -->
         <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex items-center gap-2">
               <div class="p-1.5 rounded-lg bg-red-50 text-wabi-red">
                 <app-icon name="message-square" class="w-4 h-4" />
               </div>
-              <h2 class="text-sm font-black text-slate-800">長輩手指日語卡（點擊大字出示）</h2>
+              <h2 class="text-sm font-black text-slate-800">長輩手指日語卡（大字展示 + 發音）</h2>
             </div>
-            <span class="text-[11px] text-slate-400 font-medium">免開口即時問</span>
+            <span class="text-[11px] text-slate-400 font-medium">免開口點擊即播</span>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
@@ -310,9 +309,12 @@
               v-for="ph in quickPhrases" 
               :key="ph.jp"
               @click="openPhraseModal(ph)"
-              class="p-2.5 bg-stone-50 hover:bg-red-50/60 border border-stone-200 rounded-xl text-left transition"
+              class="p-2.5 bg-stone-50 hover:bg-red-50/60 border border-stone-200 rounded-xl text-left transition active:scale-98"
             >
-              <div class="text-xs font-bold text-slate-800 truncate">{{ ph.zh }}</div>
+              <div class="text-xs font-bold text-slate-800 truncate flex items-center justify-between">
+                <span>{{ ph.zh }}</span>
+                <app-icon name="volume-2" class="w-3.5 h-3.5 text-wabi-red shrink-0" />
+              </div>
               <div class="text-[11px] text-slate-500 truncate mt-0.5">{{ ph.jp }}</div>
             </button>
           </div>
@@ -627,7 +629,7 @@
       <app-icon name="plus" class="w-7 h-7" />
     </button>
 
-    <!-- 彈出視窗：長輩手指日語大字燈箱 -->
+    <!-- 彈出視窗：長輩手指日語大字燈箱 (含真人發音功能) -->
     <div 
       v-if="selectedPhrase" 
       @click="selectedPhrase = null" 
@@ -635,9 +637,20 @@
     >
       <div class="bg-white p-6 rounded-3xl max-w-sm w-full flex flex-col items-center shadow-2xl text-center" @click.stop>
         <span class="text-xs font-bold text-wabi-red uppercase tracking-wider">手指溝通卡 · 請出示給對方</span>
+        
         <h2 class="text-2xl font-black text-slate-900 mt-3 leading-snug">{{ selectedPhrase.jp }}</h2>
         <p class="text-base font-bold text-slate-500 mt-2">（{{ selectedPhrase.zh }}）</p>
-        <p class="text-xs text-slate-400 mt-5 font-medium">輕觸任意處關閉視窗</p>
+
+        <!-- 播放日語發音按鈕 -->
+        <button 
+          @click="speakJapanese(selectedPhrase.jp)"
+          class="mt-5 px-5 py-2.5 bg-red-50 hover:bg-red-100 text-wabi-red font-black text-sm rounded-full flex items-center gap-2 border border-red-200 transition active:scale-95 shadow-xs"
+        >
+          <app-icon name="volume-2" class="w-5 h-5 text-wabi-red" />
+          <span>點我播放日語發音</span>
+        </button>
+
+        <p class="text-xs text-slate-400 mt-4 font-medium">輕觸任意處關閉視窗</p>
       </div>
     </div>
 
@@ -1394,6 +1407,7 @@
           <template v-else-if="name === 'calculator'"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></template>
           <template v-else-if="name === 'shield-alert'"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></template>
           <template v-else-if="name === 'message-square'"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></template>
+          <template v-else-if="name === 'volume-2'"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></template>
           <template v-else-if="name === 'plus'"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></template>
           <template v-else-if="name === 'x'"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></template>
           <template v-else-if="name === 'image'"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></template>
@@ -1415,11 +1429,11 @@
         const currentTab = ref('schedule');
         const selectedDateIndex = ref(0);
         
-        // 長輩大字模式（持久化於本地）
-        const isElderlyMode = ref(localStorage.getItem('jp_elderly_mode') === 'true');
+        // 長輩大字模式
+        const isElderlyMode = ref(localStorage.getItem('jp_elderly_mode_v2') === 'true');
         const toggleElderlyMode = () => {
           isElderlyMode.value = !isElderlyMode.value;
-          localStorage.setItem('jp_elderly_mode', isElderlyMode.value);
+          localStorage.setItem('jp_elderly_mode_v2', isElderlyMode.value);
         };
 
         const tabs = [
@@ -1440,9 +1454,28 @@
         ];
 
         const selectedPhrase = ref(null);
-        const openPhraseModal = (ph) => { selectedPhrase.value = ph; };
 
-        // 行程資料 (多重防呆，確保必定有 9 天)
+        // 真人日語語音合成發音函式
+        const speakJapanese = (text) => {
+          if (!('speechSynthesis' in window)) {
+            alert('此手機瀏覽器不支援直接發音功能。');
+            return;
+          }
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'ja-JP';
+          utterance.rate = 0.85; // 稍慢，咬字清晰
+          utterance.pitch = 1.0;
+          window.speechSynthesis.speak(utterance);
+        };
+
+        // 開啟燈箱並自動播放一次發音
+        const openPhraseModal = (ph) => {
+          selectedPhrase.value = ph;
+          speakJapanese(ph.jp);
+        };
+
+        // 行程資料 (多重防呆)
         let savedDays = null;
         try {
           const raw = localStorage.getItem('jp_trip_v2026_clean');
@@ -1454,7 +1487,7 @@
 
         const itineraryDays = ref(savedDays || tripInfo.value.days);
 
-        // 徹底清空必買清單與記帳預設項目（初始無任何資訊）
+        // 徹底清空必買清單與記帳預設項目
         const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_clean')) || []);
         const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_clean')) || []);
 
@@ -1742,6 +1775,7 @@
           quickPhrases,
           selectedPhrase,
           openPhraseModal,
+          speakJapanese,
           copyText,
           vjwQr,
           showFullScreenQr,
