@@ -762,7 +762,7 @@
   <script>
     const { createApp, ref, computed, onMounted } = Vue;
 
-    // 內嵌完整日本行程資料庫（免外連檔案，保證 100% 正常讀取）
+    // 內嵌完整日本行程資料庫
     const EMBEDDED_TRIP_DATA = {
       title: "Japan Journey 2026",
       subtitle: "關西・南紀勝浦・京都・東京",
@@ -1263,7 +1263,7 @@
       ]
     };
 
-    // 純 SVG 原生元件（杜絕任何圖示 DOM 替換衝突）
+    // 純 SVG 原生元件
     const AppIcon = {
       props: ['name'],
       template: `
@@ -1320,7 +1320,7 @@
           { id: 'expenses', name: '記帳換算', icon: 'badge-dollar-sign' }
         ];
 
-        // 長輩常用手指日語
+        // 手指日語
         const quickPhrases = [
           { zh: "請問電梯在哪裡？", jp: "すみません、エレベーターはどこですか？" },
           { zh: "請問洗手間在哪裡？", jp: "トイレはどこですか？" },
@@ -1333,21 +1333,26 @@
         const selectedPhrase = ref(null);
         const openPhraseModal = (ph) => { selectedPhrase.value = ph; };
 
-        // 讀取/儲存行程 (一體化保險讀取)
+        // 讀取/儲存行程 (加入空陣列校驗防呆，並重置快取鍵)
         let savedDays = null;
         try {
-          const raw = localStorage.getItem('jp_trip_v2026');
-          if (raw) savedDays = JSON.parse(raw);
+          const raw = localStorage.getItem('jp_trip_v2026_fixed');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              savedDays = parsed;
+            }
+          }
         } catch(e) {}
 
         const itineraryDays = ref(savedDays || tripInfo.value.days);
 
-        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_v2')) || [
+        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_v3')) || [
           { id: 's1', name: '合利他命 EX Plus 270錠', notes: '長輩保養用，藥妝店比價', bought: false, image: null },
           { id: 's2', name: '茅乃舍 柴魚高湯包', notes: '煮湯料理極佳，百貨專櫃', bought: false, image: null }
         ]);
 
-        const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_v2')) || [
+        const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_v3')) || [
           { id: 'e1', category: '美食', name: '道頓堀午餐與喫茶', date: '2026-11-08', amount: 6500, paymentMethod: '現金', notes: '街頭章魚燒與咖啡' }
         ]);
 
@@ -1356,10 +1361,10 @@
         });
 
         // 匯率系統 (JPY ➔ TWD)
-        const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate_v2')) || 0.215);
+        const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate_v3')) || 0.215);
         const inputJpyAmount = ref(10000);
         const isRateLoading = ref(false);
-        const rateLastUpdated = ref(localStorage.getItem('jpy_rate_time_v2') || '預設匯率');
+        const rateLastUpdated = ref(localStorage.getItem('jpy_rate_time_v3') || '預設匯率');
 
         const convertedTWD = computed(() => {
           return Math.round((inputJpyAmount.value || 0) * currentJpyRate.value);
@@ -1375,8 +1380,8 @@
               const now = new Date();
               const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
               rateLastUpdated.value = timeStr;
-              localStorage.setItem('cached_jpy_rate_v2', currentJpyRate.value);
-              localStorage.setItem('jpy_rate_time_v2', timeStr);
+              localStorage.setItem('cached_jpy_rate_v3', currentJpyRate.value);
+              localStorage.setItem('jpy_rate_time_v3', timeStr);
             }
           } catch (e) {
             console.warn('匯率更新失敗');
@@ -1396,10 +1401,10 @@
           '東京': { icon: 'sun', summary: '秋高氣爽 · 晴朗', temp: 17, feelsLike: 16 }
         };
 
-        const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather_v2')) || defaultWeather);
+        const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather_v3')) || defaultWeather);
 
         const currentDay = computed(() => {
-          return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0];
+          return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
         });
 
         const currentDayWeather = computed(() => {
@@ -1433,7 +1438,7 @@
 
               const now = new Date();
               weatherLastUpdated.value = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-              localStorage.setItem('cached_jp_weather_v2', JSON.stringify(liveWeatherData.value));
+              localStorage.setItem('cached_jp_weather_v3', JSON.stringify(liveWeatherData.value));
             }
           } catch (e) {
             console.warn('氣象讀取異常');
@@ -1443,7 +1448,7 @@
         };
 
         // VJW QR Code 壓縮儲存
-        const vjwQr = ref(localStorage.getItem('my_vjw_qr_v2') || null);
+        const vjwQr = ref(localStorage.getItem('my_vjw_qr_v3') || null);
         const showFullScreenQr = ref(false);
 
         const compressImg = (file, maxDim, quality, cb) => {
@@ -1469,7 +1474,7 @@
           if (!file) return;
           compressImg(file, 800, 0.8, (base64) => {
             vjwQr.value = base64;
-            localStorage.setItem('my_vjw_qr_v2', base64);
+            localStorage.setItem('my_vjw_qr_v3', base64);
           });
         };
 
@@ -1554,7 +1559,7 @@
           } else {
             items.push({ ...modalScheduleForm.value });
           }
-          localStorage.setItem('jp_trip_v2026', JSON.stringify(itineraryDays.value));
+          localStorage.setItem('jp_trip_v2026_fixed', JSON.stringify(itineraryDays.value));
           showScheduleModal.value = false;
         };
 
@@ -1563,7 +1568,7 @@
             const items = currentDay.value.items;
             const idx = items.findIndex(i => i.id === modalScheduleForm.value.id);
             if (idx !== -1) items.splice(idx, 1);
-            localStorage.setItem('jp_trip_v2026', JSON.stringify(itineraryDays.value));
+            localStorage.setItem('jp_trip_v2026_fixed', JSON.stringify(itineraryDays.value));
             showScheduleModal.value = false;
           }
         };
@@ -1571,32 +1576,36 @@
         const saveShoppingItem = () => {
           if (!shoppingForm.value.name) return;
           shoppingList.value.push({ id: 's-' + Date.now(), ...shoppingForm.value });
-          localStorage.setItem('jp_shopping_v2', JSON.stringify(shoppingList.value));
+          localStorage.setItem('jp_shopping_v3', JSON.stringify(shoppingList.value));
           showShoppingModal.value = false;
         };
 
         const deleteShoppingItem = (idx) => {
           if (confirm('確定刪除此項目？')) {
             shoppingList.value.splice(idx, 1);
-            localStorage.setItem('jp_shopping_v2', JSON.stringify(shoppingList.value));
+            localStorage.setItem('jp_shopping_v3', JSON.stringify(shoppingList.value));
           }
         };
 
         const saveExpenseItem = () => {
           if (!expenseForm.value.name || !expenseForm.value.amount) return;
           expenses.value.unshift({ id: 'e-' + Date.now(), ...expenseForm.value });
-          localStorage.setItem('jp_expenses_v2', JSON.stringify(expenses.value));
+          localStorage.setItem('jp_expenses_v3', JSON.stringify(expenses.value));
           showExpenseModal.value = false;
         };
 
         const deleteExpense = (idx) => {
           if (confirm('確定刪除此紀錄？')) {
             expenses.value.splice(idx, 1);
-            localStorage.setItem('jp_expenses_v2', JSON.stringify(expenses.value));
+            localStorage.setItem('jp_expenses_v3', JSON.stringify(expenses.value));
           }
         };
 
         onMounted(() => {
+          // 強制保底檢查：若行程為空，立即賦予內建行程
+          if (!itineraryDays.value || itineraryDays.value.length === 0) {
+            itineraryDays.value = EMBEDDED_TRIP_DATA.days;
+          }
           fetchLiveRates();
           fetchLiveWeather(currentDay.value?.location);
         });
