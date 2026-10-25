@@ -59,12 +59,16 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     body { -webkit-tap-highlight-color: transparent; }
     
-    .elderly-mode {
+    /* 雙重保證大字體模式 */
+    html.elderly-mode {
+      font-size: 118% !important;
+    }
+    .elderly-mode #app {
       zoom: 1.15;
     }
     @supports not (zoom: 1) {
       .elderly-mode * {
-        font-size: 1.15em !important;
+        font-size: 1.12em !important;
         line-height: 1.4 !important;
       }
     }
@@ -82,7 +86,6 @@
       user-select: none;
     }
 
-    /* 票券邊緣虛線 */
     .ticket-dashed-border {
       border-top: 1.5px dashed #E5E7EB;
     }
@@ -145,11 +148,12 @@
 
       <!-- ================= 1. 每日行程表 (鐵道時間軸 + 票券風) ================= -->
       <section v-show="currentTab === 'schedule'">
-        <!-- 日期滑動列 -->
-        <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-3 pt-0.5">
+        <!-- 日期滑動列 (支援當日自動置中對齊) -->
+        <div id="date-slider" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-3 pt-0.5 scroll-smooth">
           <button 
             v-for="(day, index) in itineraryDays" 
             :key="day.dateStr"
+            :id="'day-tab-' + index"
             @click="changeDate(index)"
             :class="selectedDateIndex === index 
               ? 'bg-wabi-red text-white shadow-md scale-105' 
@@ -163,7 +167,7 @@
           </button>
         </div>
 
-        <!-- 今日速覽膠囊列 (Today at a Glance) -->
+        <!-- 今日速覽膠囊列 -->
         <div class="bg-gradient-to-r from-red-50/80 to-amber-50/60 border border-red-100 rounded-xl px-3.5 py-2 mb-3 flex items-center justify-between text-xs text-slate-700 shadow-2xs">
           <div class="flex items-center gap-1.5 truncate">
             <span class="w-2 h-2 rounded-full bg-wabi-red shrink-0 animate-pulse"></span>
@@ -209,25 +213,24 @@
           </div>
         </div>
 
-        <!-- 住宿資訊小卡 -->
+        <!-- 住宿資訊小卡 (智能適配地圖) -->
         <div v-if="currentDay?.hotel" class="mb-4 bg-red-50/70 border border-red-200/80 rounded-xl p-3 flex items-center justify-between shadow-2xs">
           <div class="flex items-center gap-2.5 text-xs text-slate-800 font-bold truncate">
             <app-icon name="bed" class="w-4 h-4 text-wabi-red shrink-0" />
             <span class="truncate">今晚住宿：{{ currentDay.hotel.name }}</span>
           </div>
-          <button @click="openGoogleMap(currentDay.hotel.address)" class="text-xs text-wabi-red font-bold underline shrink-0 hover:text-wabi-darkred">
+          <button @click="openSmartMap(currentDay.hotel.address)" class="text-xs text-wabi-red font-bold underline shrink-0 hover:text-wabi-darkred">
             導航
           </button>
         </div>
 
-        <!-- 縱向時間軸容器 (Vertical Timeline Container) -->
+        <!-- 縱向時間軸容器 -->
         <div class="relative pl-7 space-y-4">
-          <!-- 貫穿式鐵道軸線 -->
           <div class="absolute left-3 top-3 bottom-5 w-0.5 bg-gradient-to-b from-wabi-red via-stone-300 to-stone-200"></div>
 
           <div v-for="(item, idx) in (currentDay?.items || [])" :key="item.id" class="relative">
             
-            <!-- 時間軸節點 (圓圈圖示) -->
+            <!-- 時間軸節點 -->
             <div 
               class="absolute -left-7 top-3.5 w-6 h-6 rounded-full border-2 border-white shadow-xs flex items-center justify-center z-10"
               :class="timelineDotColor(item.category)"
@@ -235,7 +238,7 @@
               <app-icon :name="getTransitIcon(item.transitModeIcon)" class="w-3 h-3 text-white" />
             </div>
 
-            <!-- 時間軸上方交通移動標記 -->
+            <!-- 移動時間提示 -->
             <div v-if="idx > 0 && item.transitTime" class="text-[11px] text-stone-500 font-medium pb-1.5 flex items-center gap-1.5 pl-1">
               <span class="inline-block w-1.5 h-1.5 rounded-full bg-stone-300"></span>
               <span>交通約 {{ item.transitTime }}</span>
@@ -255,19 +258,18 @@
                 <p class="mt-1 text-amber-200">{{ item.notes }}</p>
               </div>
               <div class="pt-2 border-t border-white/10 flex justify-end">
-                <button @click="openGoogleMap(item.address || item.name)" class="text-xs text-slate-200 underline flex items-center gap-1">
+                <button @click="openSmartMap(item.address || item.name)" class="text-xs text-slate-200 underline flex items-center gap-1">
                   <app-icon name="navigation-2" class="w-3.5 h-3.5" /> 機場航廈導航
                 </button>
               </div>
             </div>
 
-            <!-- 【票券風卡片】餐廳預約與重要活動 -->
+            <!-- 【票券風卡片】餐廳預約與活動 -->
             <div 
               v-else-if="item.bookingCode || item.category === '美食'"
               class="bg-white rounded-2xl p-4 shadow-2xs border border-amber-200/90 relative overflow-hidden"
               :class="cardLeftAccent(item.category)"
             >
-              <!-- 頂部：標題與日式判子印章 -->
               <div class="flex items-start justify-between">
                 <div class="flex items-center gap-2">
                   <span :class="categoryBadgeColor(item.category)" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -283,7 +285,6 @@
                 </div>
               </div>
 
-              <!-- 時間與基本資訊 -->
               <div class="mt-2 text-xs text-slate-600 space-y-1">
                 <div v-if="item.hours" class="flex items-center gap-1.5 font-bold text-slate-700">
                   <app-icon name="clock" class="w-3.5 h-3.5 text-amber-700" />
@@ -294,7 +295,6 @@
                 </div>
               </div>
 
-              <!-- 票根虛線分割與預約代號區 -->
               <div v-if="item.bookingCode" class="mt-3 pt-2.5 ticket-dashed-border flex items-center justify-between">
                 <div class="bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg">
                   <span class="text-[10px] text-amber-800 font-medium">預約號碼</span>
@@ -309,33 +309,30 @@
                 </button>
               </div>
 
-              <!-- 溫馨叮嚀便籤 -->
               <div v-if="item.notes" class="mt-2.5 bg-amber-50/50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-amber-100/70">
                 <span class="font-bold text-amber-900">🍵 貼心備註：</span>{{ item.notes }}
               </div>
 
-              <!-- 底部按鈕區：導航 + 複製日文地址給司機 -->
               <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button 
                   v-if="item.address" 
                   @click="copyText(item.address, '日文地址')"
                   class="flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-stone-100 hover:bg-stone-200 px-2.5 py-1.5 rounded-xl transition"
-                  title="搭計程車時可出示給司機看"
                 >
                   <app-icon name="copy" class="w-3 h-3" />
-                  <span>司機地址</span>
+                  <span>複製地址</span>
                 </button>
                 <button 
-                  @click.stop="openGoogleMap(item.mapQuery || item.address || item.name)"
+                  @click.stop="openSmartMap(item.mapQuery || item.address || item.name)"
                   class="flex items-center gap-1.5 text-xs font-bold text-wabi-red hover:text-wabi-darkred bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition"
                 >
                   <app-icon name="navigation-2" class="w-3.5 h-3.5" />
-                  <span>Google Maps 導航</span>
+                  <span>{{ isIosDevice ? '地圖導航' : 'Google Maps' }}</span>
                 </button>
               </div>
             </div>
 
-            <!-- 一般景點 / 交通卡片 (精緻和色邊飾) -->
+            <!-- 一般景點 / 交通卡片 -->
             <div 
               v-else 
               class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border hover:border-wabi-red/40 transition-all relative"
@@ -353,7 +350,6 @@
                 </button>
               </div>
 
-              <!-- 時間與門票資訊 -->
               <div class="mt-2 space-y-1 text-xs text-slate-600">
                 <div v-if="item.hours" class="flex items-center gap-1.5 font-medium">
                   <app-icon name="clock" class="w-3.5 h-3.5 text-slate-400" />
@@ -365,28 +361,25 @@
                 </div>
               </div>
 
-              <!-- 溫馨叮嚀便籤 -->
               <div v-if="item.notes" class="mt-2.5 bg-stone-50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-stone-100">
                 <span class="font-bold text-slate-800">💡 步行動線：</span>{{ item.notes }}
               </div>
 
-              <!-- 底部按鈕區 -->
               <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button 
                   v-if="item.address" 
                   @click="copyText(item.address, '日文地址')"
                   class="flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-stone-100 hover:bg-stone-200 px-2.5 py-1.5 rounded-xl transition"
-                  title="搭計程車時可出示給司機看"
                 >
                   <app-icon name="copy" class="w-3 h-3" />
-                  <span>司機地址</span>
+                  <span>複製地址</span>
                 </button>
                 <button 
-                  @click.stop="openGoogleMap(item.mapQuery || item.address || item.name)"
+                  @click.stop="openSmartMap(item.mapQuery || item.address || item.name)"
                   class="flex items-center gap-1.5 text-xs font-bold text-wabi-red hover:text-wabi-darkred bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition"
                 >
                   <app-icon name="navigation-2" class="w-3.5 h-3.5" />
-                  <span>Google Maps 導航</span>
+                  <span>{{ isIosDevice ? '地圖導航' : 'Google Maps' }}</span>
                 </button>
               </div>
             </div>
@@ -399,6 +392,35 @@
       <!-- ================= 2. 資訊頁 (i) ================= -->
       <section v-show="currentTab === 'info'" class="space-y-4">
         
+        <!-- 【新增功能】長輩隨身應急：一鍵查詢周邊廁所 & 便利超商 -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <button 
+            @click="searchNearby('toilet')"
+            class="p-3.5 bg-white border border-wabi-border rounded-2xl shadow-2xs hover:border-wabi-red/60 flex items-center gap-3 transition active:scale-95 text-left"
+          >
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg shrink-0">
+              🚻
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800">搜尋周邊廁所</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">多目的無障礙公廁</div>
+            </div>
+          </button>
+
+          <button 
+            @click="searchNearby('convenience')"
+            class="p-3.5 bg-white border border-wabi-border rounded-2xl shadow-2xs hover:border-wabi-red/60 flex items-center gap-3 transition active:scale-95 text-left"
+          >
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg shrink-0">
+              🏪
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800">搜尋最近超商</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">7-11 / 歇腳買水</div>
+            </div>
+          </button>
+        </div>
+
         <!-- 長輩常用手指日語會話卡 (含雙保險語音播放) -->
         <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center justify-between mb-2.5">
@@ -427,7 +449,7 @@
           </div>
         </div>
 
-        <!-- Visit Japan Web / 護照 QR 專區 (離線放大) -->
+        <!-- Visit Japan Web / 護照 QR 專區 -->
         <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md border border-slate-700 relative overflow-hidden">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
@@ -566,15 +588,15 @@
               <p class="text-slate-600 leading-relaxed">{{ h.address }}</p>
               <div class="flex justify-between items-center pt-1">
                 <span class="text-slate-500 font-medium">電話: <a :href="'tel:' + h.phone" class="text-wabi-red font-bold underline">{{ h.phone }}</a></span>
-                <button @click="openGoogleMap(h.address)" class="font-bold text-wabi-red flex items-center gap-1 underline">
-                  <app-icon name="map-pin" class="w-3.5 h-3.5" /> Google Maps
+                <button @click="openSmartMap(h.address)" class="font-bold text-wabi-red flex items-center gap-1 underline">
+                  <app-icon name="map-pin" class="w-3.5 h-3.5" /> 導航
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 日本緊急救助、醫療與觀光諮詢專線 -->
+        <!-- 日本緊急救助專線 -->
         <div class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border">
           <div class="flex items-center gap-2 mb-3">
             <div class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
@@ -699,7 +721,7 @@
           <div class="h-px bg-stone-200 flex-1"></div>
         </div>
 
-        <!-- 個人自訂想買清單 (初始為空) -->
+        <!-- 個人自訂想買清單 -->
         <div v-if="shoppingList.length === 0" class="text-center py-10 text-slate-400 text-xs font-medium bg-white rounded-2xl border border-dashed border-stone-300">
           <app-icon name="shopping-bag" class="w-8 h-8 mx-auto text-stone-300 mb-2" />
           <p>個人清單目前為空</p>
@@ -739,7 +761,7 @@
       </section>
 
 
-      <!-- ================= 4. 花費記帳 ================= -->
+      <!-- ================= 4. 花費記帳 (幣別日幣 JPY 轉 TWD) ================= -->
       <section v-show="currentTab === 'expenses'" class="space-y-4">
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden">
           <span class="text-xs uppercase font-black text-amber-300 tracking-wider">Total Expenses</span>
@@ -865,6 +887,7 @@
               <option value="住宿">住宿</option>
               <option value="美食">美食</option>
               <option value="購物">購物</option>
+              <option value="交通">交通</option>
               <option value="航班">航班</option>
               <option value="其他">其他</option>
             </select>
@@ -950,7 +973,7 @@
       </div>
     </div>
 
-    <!-- 彈出視窗 3：新增花費 Modal -->
+    <!-- 彈出視窗 3：新增花費 Modal (含日幣快捷加額鍵盤) -->
     <div v-if="showExpenseModal" class="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-xs">
       <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4">
         <div class="flex justify-between items-center border-b pb-2">
@@ -978,22 +1001,35 @@
             <input v-model="expenseForm.name" type="text" placeholder="例如：便利商店、計程車、藥妝" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold" />
           </div>
 
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="font-bold text-slate-700">金額 (日圓 JPY ¥)</label>
+              <span class="text-[10px] text-slate-400">點擊快捷加總</span>
+            </div>
+            <input v-model.number="expenseForm.amount" type="number" placeholder="¥ 金額" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-black text-slate-900 text-base" />
+
+            <!-- 【新增功能】日幣快捷面額膠囊列 -->
+            <div class="grid grid-cols-6 gap-1.5 mt-2">
+              <button type="button" @click="addExpenseAmount(100)" class="py-1.5 bg-stone-100 hover:bg-stone-200 font-bold rounded-lg text-slate-700 text-[11px]">+100</button>
+              <button type="button" @click="addExpenseAmount(500)" class="py-1.5 bg-stone-100 hover:bg-stone-200 font-bold rounded-lg text-slate-700 text-[11px]">+500</button>
+              <button type="button" @click="addExpenseAmount(1000)" class="py-1.5 bg-amber-50 hover:bg-amber-100 font-bold rounded-lg text-amber-900 text-[11px]">+1k</button>
+              <button type="button" @click="addExpenseAmount(5000)" class="py-1.5 bg-amber-50 hover:bg-amber-100 font-bold rounded-lg text-amber-900 text-[11px]">+5k</button>
+              <button type="button" @click="addExpenseAmount(10000)" class="py-1.5 bg-red-50 hover:bg-red-100 font-bold rounded-lg text-wabi-red text-[11px]">+1萬</button>
+              <button type="button" @click="expenseForm.amount = 0" class="py-1.5 bg-stone-200 hover:bg-stone-300 font-bold rounded-lg text-slate-600 text-[11px]">歸零</button>
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="font-bold text-slate-700 block mb-1">日期</label>
               <input v-model="expenseForm.date" type="date" class="w-full p-2 bg-stone-50 border border-stone-200 rounded-xl" />
             </div>
             <div>
-              <label class="font-bold text-slate-700 block mb-1">金額 (日圓 JPY ¥)</label>
-              <input v-model.number="expenseForm.amount" type="number" placeholder="¥ 金額" class="w-full p-2 bg-stone-50 border border-stone-200 rounded-xl font-black text-slate-900" />
-            </div>
-          </div>
-
-          <div>
-            <label class="font-bold text-slate-700 block mb-1">付款方式</label>
-            <div class="flex gap-4">
-              <label class="flex items-center gap-1.5"><input type="radio" value="信用卡" v-model="expenseForm.paymentMethod" /> 信用卡/Apple Pay</label>
-              <label class="flex items-center gap-1.5"><input type="radio" value="現金" v-model="expenseForm.paymentMethod" /> 現金日幣</label>
+              <label class="font-bold text-slate-700 block mb-1">付款方式</label>
+              <select v-model="expenseForm.paymentMethod" class="w-full p-2 bg-stone-50 border border-stone-200 rounded-xl font-bold">
+                <option value="信用卡">信用卡 / Apple Pay</option>
+                <option value="現金">日幣現金</option>
+              </select>
             </div>
           </div>
 
@@ -1014,7 +1050,7 @@
   <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
-    // 行程資料庫 (精緻票券化設定)
+    // 行程資料庫
     const EMBEDDED_TRIP_DATA = {
       title: "Japan Journey 2026",
       subtitle: "關西・南紀勝浦・京都・東京",
@@ -1642,11 +1678,23 @@
         const currentTab = ref('schedule');
         const selectedDateIndex = ref(0);
         
-        // 長輩大字模式
+        // 偵測是否為 iPhone / iPad 裝置
+        const isIosDevice = computed(() => {
+          return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        });
+
+        // 雙重保證大字體模式
         const isElderlyMode = ref(localStorage.getItem('jp_elderly_mode_timeline') === 'true');
+        
+        const applyElderlyClass = (val) => {
+          if (val) document.documentElement.classList.add('elderly-mode');
+          else document.documentElement.classList.remove('elderly-mode');
+        };
+
         const toggleElderlyMode = () => {
           isElderlyMode.value = !isElderlyMode.value;
           localStorage.setItem('jp_elderly_mode_timeline', isElderlyMode.value);
+          applyElderlyClass(isElderlyMode.value);
         };
 
         const tabs = [
@@ -1705,7 +1753,7 @@
           speakJapanese(ph.jp);
         };
 
-        // 行程資料 (純文字乾淨版快取)
+        // 行程資料
         let savedDays = null;
         try {
           const raw = localStorage.getItem('jp_trip_v2026_timeline');
@@ -1725,7 +1773,7 @@
           return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
         });
 
-        // 今日速覽計算文字 (長輩一目了然)
+        // 今日速覽
         const todayGlanceText = computed(() => {
           const items = currentDay.value?.items || [];
           const hasDinner = items.some(i => i.bookingCode || i.category === '美食');
@@ -1850,7 +1898,7 @@
           }
         };
 
-        // 一鍵複製文字 (附帶自訂提示)
+        // 一鍵複製文字
         const copyText = (txt, label = '內容') => {
           if (!txt) return;
           navigator.clipboard.writeText(txt).then(() => {
@@ -1900,9 +1948,23 @@
 
         const changeDate = (idx) => { selectedDateIndex.value = idx; };
 
-        const openGoogleMap = (query) => {
+        // 智能導航切換 (iOS Apple Maps vs Android Google Maps)
+        const openSmartMap = (query) => {
           if (!query) return;
-          window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
+          const encoded = encodeURIComponent(query);
+          if (isIosDevice.value) {
+            // iPhone 呼叫 Apple 原生地圖
+            window.location.href = `maps://maps.apple.com/?q=${encoded}`;
+          } else {
+            // Android 與電腦呼叫 Google Maps
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
+          }
+        };
+
+        // 一鍵搜尋周邊廁所與超商
+        const searchNearby = (type) => {
+          const kw = type === 'toilet' ? '周辺のトイレ' : 'コンビニ';
+          openSmartMap(kw);
         };
 
         const getTransitIcon = (icon) => {
@@ -1910,7 +1972,6 @@
           return valid.includes(icon) ? icon : 'train';
         };
 
-        // 時間軸節點背景和色
         const timelineDotColor = (cat) => {
           switch (cat) {
             case '景點': return 'bg-emerald-600';
@@ -1922,7 +1983,6 @@
           }
         };
 
-        // 卡片左側和色邊飾
         const cardLeftAccent = (cat) => {
           switch (cat) {
             case '景點': return 'border-l-4 border-l-emerald-500';
@@ -1963,7 +2023,13 @@
         const showShoppingModal = ref(false);
         const shoppingForm = ref({ name: '', image: null, notes: '', bought: false });
         const showExpenseModal = ref(false);
-        const expenseForm = ref({ category: '飲食', name: '', date: new Date().toISOString().slice(0, 10), amount: '', paymentMethod: '信用卡', notes: '' });
+        const expenseForm = ref({ category: '飲食', name: '', date: new Date().toISOString().slice(0, 10), amount: 0, paymentMethod: '信用卡', notes: '' });
+
+        // 記帳面額快捷加總
+        const addExpenseAmount = (val) => {
+          const current = Number(expenseForm.value.amount) || 0;
+          expenseForm.value.amount = current + val;
+        };
 
         const handleFabClick = () => {
           if (currentTab.value === 'schedule') {
@@ -1974,7 +2040,7 @@
             shoppingForm.value = { name: '', image: null, notes: '', bought: false };
             showShoppingModal.value = true;
           } else if (currentTab.value === 'expenses') {
-            expenseForm.value = { category: '飲食', name: '', date: new Date().toISOString().slice(0, 10), amount: '', paymentMethod: '信用卡', notes: '' };
+            expenseForm.value = { category: '飲食', name: '', date: new Date().toISOString().slice(0, 10), amount: 0, paymentMethod: '信用卡', notes: '' };
             showExpenseModal.value = true;
           }
         };
@@ -2040,10 +2106,30 @@
           }
         };
 
+        // 當天日期自動對焦 (Auto Focus)
+        const autoFocusToday = () => {
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          const todayStr = `${y}-${m}-${d}`;
+
+          const idx = itineraryDays.value.findIndex(day => day.dateStr === todayStr);
+          if (idx !== -1) {
+            selectedDateIndex.value = idx;
+            setTimeout(() => {
+              const el = document.getElementById('day-tab-' + idx);
+              if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            }, 300);
+          }
+        };
+
         onMounted(() => {
+          applyElderlyClass(isElderlyMode.value);
           if (!itineraryDays.value || itineraryDays.value.length === 0) {
             itineraryDays.value = EMBEDDED_TRIP_DATA.days;
           }
+          autoFocusToday();
           fetchLiveRates();
           fetchLiveWeather(currentDay.value?.location);
         });
@@ -2061,6 +2147,7 @@
           fetchLiveWeather,
           isElderlyMode,
           toggleElderlyMode,
+          isIosDevice,
           quickPhrases,
           selectedPhrase,
           openPhraseModal,
@@ -2069,6 +2156,8 @@
           todayGlanceText,
           timelineDotColor,
           cardLeftAccent,
+          openSmartMap,
+          searchNearby,
           vjwQr,
           showFullScreenQr,
           handleVjwUpload,
@@ -2092,6 +2181,7 @@
           shoppingForm,
           showExpenseModal,
           expenseForm,
+          addExpenseAmount,
           changeDate,
           handleFabClick,
           openEditModal,
@@ -2105,8 +2195,7 @@
           deleteExpense,
           categoryBadgeColor,
           expenseCategoryIcon,
-          getTransitIcon,
-          openGoogleMap
+          getTransitIcon
         };
       }
     });
