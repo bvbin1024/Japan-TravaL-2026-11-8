@@ -29,9 +29,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
-  <!-- 引入解耦行程資料庫 -->
-  <script src="./data.js"></script>
-
   <script>
     tailwind.config = {
       theme: {
@@ -115,7 +112,7 @@
 
       <!-- ================= 1. 每日行程表 ================= -->
       <section v-show="currentTab === 'schedule'">
-        <!-- 日期滑動列 (零延遲切換) -->
+        <!-- 日期滑動列 -->
         <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-2.5 pt-1">
           <button 
             v-for="(day, index) in itineraryDays" 
@@ -166,7 +163,7 @@
           </div>
         </div>
 
-        <!-- 住宿資訊小卡 (附電話與導航) -->
+        <!-- 住宿資訊小卡 -->
         <div v-if="currentDay?.hotel" class="mb-3.5 bg-red-50/70 border border-red-100 rounded-xl p-3 flex items-center justify-between">
           <div class="flex items-center gap-2.5 text-xs text-slate-800 font-semibold">
             <app-icon name="bed" class="w-4 h-4 text-jp-red shrink-0" />
@@ -177,7 +174,7 @@
           </button>
         </div>
 
-        <!-- 行程卡片清單 (無外層 key，避免 DOM 銷毀反白) -->
+        <!-- 行程卡片清單 -->
         <div class="space-y-3">
           <div v-for="(item, idx) in (currentDay?.items || [])" :key="item.id" class="space-y-3">
             
@@ -239,7 +236,7 @@
                 </div>
               </div>
 
-              <!-- 長輩貼心備註 -->
+              <!-- 長輩動線備註 -->
               <div v-if="item.notes" class="mt-2.5 bg-slate-50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-slate-100">
                 {{ item.notes }}
               </div>
@@ -264,7 +261,7 @@
       <!-- ================= 2. 資訊頁 (i) ================= -->
       <section v-show="currentTab === 'info'" class="space-y-4">
         
-        <!-- 【孝親專用】長輩常用手指日語會話卡 (點擊彈出大字) -->
+        <!-- 長輩常用手指日語會話卡 (點擊彈出大字) -->
         <div class="bg-white rounded-2xl p-4 shadow-xs border border-slate-200">
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex items-center gap-2">
@@ -362,7 +359,7 @@
             </div>
           </div>
 
-          <!-- 長輩日圓硬幣對照圖鑑提示 -->
+          <!-- 長輩找零錢提示 -->
           <div class="mt-3 pt-3 border-t border-slate-100">
             <span class="text-[11px] font-bold text-slate-500 block mb-1.5">長輩找零錢提示：</span>
             <div class="flex justify-between text-center text-[11px]">
@@ -765,7 +762,508 @@
   <script>
     const { createApp, ref, computed, onMounted } = Vue;
 
-    // 純 SVG 原生元件（杜絕任何外部圖示庫與 Vue removeChild 衝突）
+    // 內嵌完整日本行程資料庫（免外連檔案，保證 100% 正常讀取）
+    const EMBEDDED_TRIP_DATA = {
+      title: "Japan Journey 2026",
+      subtitle: "關西・南紀勝浦・京都・東京",
+      coverImage: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=75",
+      flights: [
+        {
+          type: "去程 (台北 ➔ 大阪關西)",
+          code: "BR178",
+          airline: "長榮航空 EVA Air",
+          date: "2026/11/08 (日)",
+          from: "TPE 桃園 T2",
+          depTime: "06:30",
+          to: "KIX 關西 T1",
+          arrTime: "09:50",
+          duration: "2h 20m",
+          notes: "請提前於 03:30~04:00 抵達桃園機場第二航廈辦理登機與行李托運。"
+        },
+        {
+          type: "回程 (東京成田 ➔ 台北)",
+          code: "BR183",
+          airline: "長榮航空 EVA Air",
+          date: "2026/11/16 (一)",
+          from: "NRT 成田 T2",
+          depTime: "13:00",
+          to: "TPE 桃園 T2",
+          arrTime: "16:05",
+          duration: "4h 05m",
+          notes: "成田第二航廈長榮櫃台辦理托運。退稅免稅購物預留至少 2.5 小時。"
+        }
+      ],
+      hotels: [
+        {
+          name: "MIMARU 大阪心齋橋 CENTRAL",
+          dates: "11/08 - 11/09 (1晚)",
+          address: "大阪府大阪市中央區南船場4-11-20",
+          phone: "+81 6-6241-7111"
+        },
+        {
+          name: "TAOYA 那智勝浦（TAOYA Nachikatsuura）",
+          dates: "11/09 - 11/11 (2晚)",
+          address: "和歌山縣東牟婁郡那智勝浦町大字勝浦216-19",
+          phone: "+81 570-550-078"
+        },
+        {
+          name: "MIMARU 京都 河原町五條",
+          dates: "11/11 - 11/13 (2晚)",
+          address: "京都府京都市下京區西石垣通五條下平居町17-1",
+          phone: "+81 75-746-2481"
+        },
+        {
+          name: "東京銀座格蘭巴哈酒店 (Hotel GrandBach Tokyo Ginza)",
+          dates: "11/13 - 11/16 (3晚)",
+          address: "東京都中央區銀座5-13-12",
+          phone: "+81 3-5550-2222"
+        }
+      ],
+      cities: {
+        "大阪": { lat: 34.69, lon: 135.50 },
+        "南紀勝浦": { lat: 33.63, lon: 135.94 },
+        "京都": { lat: 35.01, lon: 135.76 },
+        "天橋立": { lat: 35.56, lon: 135.19 },
+        "東京": { lat: 35.68, lon: 139.76 }
+      },
+      days: [
+        {
+          dateStr: "2026-11-08",
+          weekday: "Sun",
+          dayNumber: "08",
+          location: "大阪",
+          hotel: {
+            name: "MIMARU 大阪心齋橋 CENTRAL",
+            address: "大阪府大阪市中央區南船場4-11-20"
+          },
+          items: [
+            {
+              id: "d1-flight",
+              category: "航班",
+              name: "長榮航空 BR178 抵達關西",
+              hours: "06:30 - 09:50",
+              notes: "抵達關西機場第一航廈。入境後搭乘南海電鐵特急 Rapi:t 前往難波站。",
+              address: "關西國際機場第一航廈"
+            },
+            {
+              id: "d1-hotel-drop",
+              category: "住宿",
+              name: "MIMARU 大阪心齋橋 寄存行李",
+              hours: "約 11:45 抵達",
+              notes: "自難波站轉乘計程車約5分鐘抵達飯店，先放行李輕裝出發。",
+              address: "MIMARU 大阪心齋橋 CENTRAL",
+              transitModeIcon: "train",
+              transitTime: "約 50 分鐘 (南海電鐵 Rapi:t)"
+            },
+            {
+              id: "d1-shinsaibashi",
+              category: "景點",
+              name: "心齋橋筋・道頓堀周邊平坦散策",
+              hours: "12:00 - 17:00",
+              ticket: "免費",
+              notes: "拱廊商店街遮陽避雨且全程平坦，長輩可悠閒品嚐章魚燒、喫茶咖啡。",
+              address: "道頓堀 固力果跑跑人",
+              transitModeIcon: "footprints",
+              transitTime: "步行約 5 分鐘"
+            },
+            {
+              id: "d1-dinner",
+              category: "美食",
+              name: "Yakiniku Ushigoro Umeda (梅田燒肉)",
+              hours: "18:00 - 20:00 (預約完成)",
+              ticket: "訂位代號: PERQZJ / 6位",
+              notes: "建議自飯店搭計程車直達梅田餐廳，避免長輩在梅田地下迷航。",
+              address: "Yakiniku Ushigoro Umeda, Osaka",
+              transitModeIcon: "car",
+              transitTime: "計程車約 15 分鐘"
+            }
+          ]
+        },
+        {
+          dateStr: "2026-11-09",
+          weekday: "Mon",
+          dayNumber: "09",
+          location: "南紀勝浦",
+          hotel: {
+            name: "TAOYA 那智勝浦",
+            address: "和歌山縣東牟婁郡那智勝浦町大字勝浦216-19"
+          },
+          items: [
+            {
+              id: "d2-transit-kuroshio",
+              category: "景點",
+              name: "JR 特急黑潮號 (Kuroshio) 景觀鐵道",
+              hours: "10:00 - 14:00",
+              notes: "從天王寺或新大阪站上車。沿途飽覽和歌山蔚藍太平洋海景，全程舒適安坐。",
+              address: "紀伊勝浦車站",
+              transitModeIcon: "train",
+              transitTime: "特急列車約 3.5~4 小時"
+            },
+            {
+              id: "d2-checkin-taoya",
+              category: "住宿",
+              name: "TAOYA 那智勝浦 辦理入住",
+              hours: "14:30 抵達勝浦站接駁",
+              notes: "抵達紀伊勝浦站後搭乘專用接駁車前往飯店，享受全包式服務。",
+              address: "TAOYA 那智勝浦",
+              transitModeIcon: "bus",
+              transitTime: "接駁車約 10 分鐘"
+            },
+            {
+              id: "d2-hotspring",
+              category: "景點",
+              name: "海景無邊際露天風呂 & Lounge 酒廊",
+              hours: "15:30 - 18:00",
+              ticket: "房費全包免費享受",
+              notes: "泡湯欣賞勝浦港海灣夕陽，大廳酒廊免費提供啤酒、飲品與精緻小點。",
+              address: "TAOYA 那智勝浦"
+            },
+            {
+              id: "d2-dinner",
+              category: "美食",
+              name: "飯店海鮮豪華自助晚宴",
+              hours: "18:30 - 20:30",
+              notes: "享用在地生鮪魚、黑毛和牛與現做海鮮料理，輕鬆無負擔。",
+              address: "TAOYA 那智勝浦 餐廳"
+            }
+          ]
+        },
+        {
+          dateStr: "2026-11-10",
+          weekday: "Tue",
+          dayNumber: "10",
+          location: "南紀勝浦",
+          hotel: {
+            name: "TAOYA 那智勝浦",
+            address: "和歌山縣東牟婁郡那智勝浦町大字勝浦216-19"
+          },
+          items: [
+            {
+              id: "d3-nachi-falls",
+              category: "景點",
+              name: "世界遺產熊野那智大社 & 那智之瀧",
+              hours: "09:00 - 12:00",
+              ticket: "瀧御拜所 300円",
+              notes: "日本第一名瀑。長輩建議乘車直達飛瀧神社入口處，免爬古道大石階梯。",
+              address: "那智瀑布, Nachikatsuura",
+              transitModeIcon: "car",
+              transitTime: "計程車/專車約 20 分鐘"
+            },
+            {
+              id: "d3-lunch-maguro",
+              category: "美食",
+              name: "勝浦漁港 賑合市場生黑鮪魚午餐",
+              hours: "12:30 - 14:00",
+              notes: "品嚐全日本第一「不經冷凍、產地直送」的熟成生黑鮪魚丼飯與定食。",
+              address: "勝浦漁港 にぎわい市場",
+              transitModeIcon: "car",
+              transitTime: "約 15 分鐘"
+            },
+            {
+              id: "d3-boat-tour",
+              category: "景點",
+              name: "紀之松島遊覽船巡航 (海風休憩)",
+              hours: "14:30 - 16:00",
+              ticket: "約 1,600円",
+              notes: "平穩坐於遊覽船內欣賞外海奇岩島嶼，免步行極致放鬆。",
+              address: "勝浦港觀光船棧橋",
+              transitModeIcon: "sailboat",
+              transitTime: "步行約 3 分鐘"
+            },
+            {
+              id: "d3-dinner",
+              category: "美食",
+              name: "TAOYA 精緻溫泉百匯晚宴",
+              hours: "18:30",
+              notes: "返回飯店泡湯放鬆並享用豐盛晚餐。",
+              address: "TAOYA 那智勝浦"
+            }
+          ]
+        },
+        {
+          dateStr: "2026-11-11",
+          weekday: "Wed",
+          dayNumber: "11",
+          location: "京都",
+          hotel: {
+            name: "MIMARU 京都 河原町五條",
+            address: "京都府京都市下京區西石垣通五條下平居町17-1"
+          },
+          items: [
+            {
+              id: "d4-transit-kyoto",
+              category: "景點",
+              name: "JR 特急黑潮號前往古都京都",
+              hours: "10:00 - 14:00",
+              notes: "紀伊勝浦站出發，安坐車廂內欣賞海岸與鄉村風景，直抵京都站。",
+              address: "京都車站",
+              transitModeIcon: "train",
+              transitTime: "特急直達約 3.5~4 小時"
+            },
+            {
+              id: "d4-hotel-mimaru",
+              category: "住宿",
+              name: "MIMARU 京都 河原町五條 入住",
+              hours: "14:30 辦理入住",
+              notes: "自京都站搭乘計程車約8分鐘抵達飯店，稍作梳洗休息。",
+              address: "MIMARU 京都 河原町五條",
+              transitModeIcon: "car",
+              transitTime: "計程車約 8 分鐘"
+            },
+            {
+              id: "d4-kamogawa",
+              category: "景點",
+              name: "鴨川河畔散策・四條河原町漫步",
+              hours: "15:30 - 18:00",
+              ticket: "免費",
+              notes: "秋意漸濃的鴨川旁平坦步道，伴隨微風散步拍照非常舒適。",
+              address: "四條大橋 鴨川",
+              transitModeIcon: "footprints",
+              transitTime: "步行約 5 分鐘"
+            },
+            {
+              id: "d4-dinner",
+              category: "美食",
+              name: "中島家 Kyoto (預約確認 / 6位)",
+              hours: "18:30 - 20:30",
+              notes: "京都地道精緻家常菜與和風割烹居酒料理，環境舒適雅緻。",
+              address: "中島家 京都",
+              transitModeIcon: "car",
+              transitTime: "步行或計程車短程即達"
+            }
+          ]
+        },
+        {
+          dateStr: "2026-11-12",
+          weekday: "Thu",
+          dayNumber: "12",
+          location: "天橋立",
+          hotel: {
+            name: "MIMARU 京都 河原町五條",
+            address: "京都府京都市下京區西石垣通五條下平居町17-1"
+          },
+          items: [
+            {
+              id: "d5-charter-start",
+              category: "景點",
+              name: "海之京都 全日專車包車出發",
+              hours: "08:00 飯店大廳集合",
+              notes: "今日全程專屬包車直達天橋立與伊根，長輩免舟車勞頓與轉車之苦。",
+              address: "MIMARU 京都 河原町五條",
+              transitModeIcon: "car",
+              transitTime: "專車前往宮津天橋立約 100 分鐘"
+            },
+            {
+              id: "d5-amanohashidate",
+              category: "景點",
+              name: "天橋立 傘松公園 (昇龍觀) & 元伊勢籠神社",
+              hours: "09:50 - 11:20",
+              ticket: "單軌斜坡車來回約 680円",
+              notes: "搭乘平穩安全的單軌電車直達景觀台，長輩免走陡坡即可俯瞰日本三景。",
+              address: "傘松公園, 宮津市",
+              transitModeIcon: "mountain",
+              transitTime: "搭乘斜坡車約 5 分鐘"
+            },
+            {
+              id: "d5-lunch",
+              category: "美食",
+              name: "宮津灣海鮮名物午餐",
+              hours: "12:00 - 13:00",
+              notes: "品嚐丹後若狹灣新鮮海鮮丼、烤魚定食。",
+              address: "天橋立 觀光船碼頭周邊"
+            },
+            {
+              id: "d5-ine-cruise",
+              category: "景點",
+              name: "伊根町舟屋巡禮 & 伊根灣觀光船",
+              hours: "13:40 - 15:40",
+              ticket: "遊船票 1,000円",
+              notes: "從海上遠眺230間傳統水上舟屋，船上可餵海鷗。隨後在舟屋咖啡館坐下飲茶。",
+              address: "伊根町舟屋, 京都府",
+              transitModeIcon: "sailboat",
+              transitTime: "包車驅車約 30 分鐘抵達伊根"
+            },
+            {
+              id: "d5-dinner",
+              category: "美食",
+              name: "Lugol Kyoto (預約確認 / 4+2位)",
+              hours: "19:00 - 21:00",
+              notes: "專車約 17:30 返回京都飯店休整，晚間前往精緻餐酒館 Lugol 享用晚餐。",
+              address: "Lugol Kyoto",
+              transitModeIcon: "car",
+              transitTime: "計程車約 10 分鐘"
+            }
+          ]
+        },
+        {
+          dateStr: "2026-11-13",
+          weekday: "Fri",
+          dayNumber: "13",
+          location: "東京",
+          hotel: {
+            name: "東京銀座格蘭巴哈酒店",
+            address: "東京都中央區銀座5-13-12"
+          },
+          items: [
+            {
+              id: "d6-shinkansen",
+              category: "景點",
+              name: "東海道新幹線 Nozomi 前往東京",
+              hours: "10:00 - 12:15",
+              notes: "京都站搭乘新幹線直達東京站，平穩疾馳約 2 小時 15 分，車上享受鐵道便當與咖啡。",
+              address: "東京車站",
+              transitModeIcon: "train",
+              transitTime: "新幹線 2h 15m"
+            },
+            {
+              id: "d6-hotel-tokyo",
+              category: "住宿",
+              name: "銀座格蘭巴哈酒店 入住寄放行李",
+              hours: "12:45 抵達飯店",
+              notes: "東京站丸之內或八重洲口搭計程車5分鐘即達飯店。環境雅緻清幽。",
+              address: "Hotel GrandBach Tokyo Ginza",
+              transitModeIcon: "car",
+              transitTime: "計程車約 8 分鐘"
+            },
+            {
+              id: "d6-ginza-six",
+              category: "景點",
+              name: "GINZA SIX、蔦屋書店與銀座大道漫步",
+              hours: "14:00 - 18:00",
+              ticket: "免費",
+              notes: "GINZA SIX 內部挑高舒適、空調宜人且休息座椅豐富，長輩逛街毫無壓力。",
+              address: "GINZA SIX, Ginza, Tokyo",
+              transitModeIcon: "footprints",
+              transitTime: "步行約 3 分鐘"
+            },
+            {
+              id: "d6-dinner",
+              category: "美食",
+              name: "銀座精緻洋食或壽司輕晚餐",
+              hours: "18:30 - 20:00",
+              notes: "於銀座四丁目附近享用老舖洋食或板前壽司，散步回飯店。",
+              address: "銀座中央通周邊"
+            }
+          ]
+        },
+        {
+          dateStr: "2026-11-14",
+          weekday: "Sat",
+          dayNumber: "14",
+          location: "東京",
+          hotel: {
+            name: "東京銀座格蘭巴哈酒店",
+            address: "東京都中央區銀座5-13-12"
+          },
+          items: [
+            {
+              id: "d7-omotesando",
+              category: "景點",
+              name: "表參道林蔭大道・當代建築巡禮",
+              hours: "10:00 - 13:00",
+              ticket: "免費",
+              notes: "櫸樹林蔭大道地勢平緩，欣賞大師建築外觀，漫步選品店，步調悠閒。",
+              address: "表參道 Hills",
+              transitModeIcon: "car",
+              transitTime: "銀座搭計程車約 15 分鐘"
+            },
+            {
+              id: "d7-azabudai",
+              category: "景點",
+              name: "麻布台之丘 (Azabudai Hills) 現代花園漫遊",
+              hours: "15:00 - 17:30",
+              ticket: "公共區域免費",
+              notes: "全日本最新地標。中央廣場綠意盎然，全區無障礙電梯與坡道完善，長輩參觀輕鬆舒服。",
+              address: "麻布台 Hills, Tokyo",
+              transitModeIcon: "car",
+              transitTime: "計程車約 10 分鐘"
+            },
+            {
+              id: "d7-dinner",
+              category: "美食",
+              name: "Ushigoro S 銀座 (頂級和牛私廚 / 6位)",
+              hours: "18:30 - 21:00 (預約完成)",
+              ticket: "訂位代號: ZWQR6K / 6位",
+              notes: "Ushigoro 旗下最高殿堂全包廂個室服務，專人代烤頂級黑毛和牛全餐。",
+              address: "Ushigoro S. Ginza",
+              transitModeIcon: "car",
+              transitTime: "計程車約 10 分鐘返銀座"
+            }
+          ]
+        },
+        {
+          dateStr: "2026-11-15",
+          weekday: "Sun",
+          dayNumber: "15",
+          location: "東京",
+          hotel: {
+            name: "東京銀座格蘭巴哈酒店",
+            address: "東京都中央區銀座5-13-12"
+          },
+          items: [
+            {
+              id: "d8-kokyo",
+              category: "景點",
+              name: "丸之內林蔭仲通 & 皇居外苑散步",
+              hours: "10:00 - 12:30",
+              ticket: "免費",
+              notes: "星期日丸之內仲通轉為徒步區，可悠閒散步至皇居二重橋與楠木正成銅像拍合照。",
+              address: "皇居外苑 楠木正成銅像",
+              transitModeIcon: "car",
+              transitTime: "計程車約 8 分鐘"
+            },
+            {
+              id: "d8-shopping",
+              category: "購物",
+              name: "銀座三越・松屋・伊東屋採買伴手禮",
+              hours: "14:30 - 18:00",
+              notes: "集中在銀座採購日本銘菓、保養品與文具，退稅櫃台動線清晰，隨時可回飯店放戰利品。",
+              address: "銀座三越 百貨",
+              transitModeIcon: "footprints",
+              transitTime: "步行約 4 分鐘"
+            },
+            {
+              id: "d8-dinner",
+              category: "美食",
+              name: "銀座割烹或季節天婦羅盛宴",
+              hours: "18:30",
+              notes: "旅程最後一晚在銀座享用精緻日式割烹或天婦羅，晚間整理行李備戰回程。",
+              address: "銀座周邊"
+            }
+          ]
+        },
+        {
+          dateStr: "2026-11-16",
+          weekday: "Mon",
+          dayNumber: "16",
+          location: "東京",
+          hotel: null,
+          items: [
+            {
+              id: "d9-transit-airport",
+              category: "其他",
+              name: "飯店退房 ➔ 前往成田機場第二航廈",
+              hours: "09:00 - 10:15",
+              notes: "建議預約專車接送或搭乘計程車至東京站轉乘 成田特快 N'EX 直達第二航廈。",
+              address: "成田國際機場第二航廈",
+              transitModeIcon: "train",
+              transitTime: "專車/特快約 60~75 分鐘"
+            },
+            {
+              id: "d9-flight",
+              category: "航班",
+              name: "長榮航空 BR183 起飛返台",
+              hours: "13:00 - 16:05",
+              ticket: "BR183 成田T2 ➔ 桃園T2",
+              notes: "10:15 抵達航廈辦理登機、安檢與免稅購物。16:05 順利返抵國門。",
+              address: "成田國際機場第二航廈"
+            }
+          ]
+        }
+      ]
+    };
+
+    // 純 SVG 原生元件（杜絕任何圖示 DOM 替換衝突）
     const AppIcon = {
       props: ['name'],
       template: `
@@ -810,7 +1308,7 @@
 
     const app = createApp({
       setup() {
-        const tripInfo = ref(window.TRIP_DATA || {});
+        const tripInfo = ref(EMBEDDED_TRIP_DATA);
         const currentTab = ref('schedule');
         const selectedDateIndex = ref(0);
         const isElderlyMode = ref(false);
@@ -835,14 +1333,21 @@
         const selectedPhrase = ref(null);
         const openPhraseModal = (ph) => { selectedPhrase.value = ph; };
 
-        // 讀取/儲存行程 (解耦架構)
-        const itineraryDays = ref(tripInfo.value.days || []);
-        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping')) || [
+        // 讀取/儲存行程 (一體化保險讀取)
+        let savedDays = null;
+        try {
+          const raw = localStorage.getItem('jp_trip_v2026');
+          if (raw) savedDays = JSON.parse(raw);
+        } catch(e) {}
+
+        const itineraryDays = ref(savedDays || tripInfo.value.days);
+
+        const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_v2')) || [
           { id: 's1', name: '合利他命 EX Plus 270錠', notes: '長輩保養用，藥妝店比價', bought: false, image: null },
           { id: 's2', name: '茅乃舍 柴魚高湯包', notes: '煮湯料理極佳，百貨專櫃', bought: false, image: null }
         ]);
 
-        const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses')) || [
+        const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_v2')) || [
           { id: 'e1', category: '美食', name: '道頓堀午餐與喫茶', date: '2026-11-08', amount: 6500, paymentMethod: '現金', notes: '街頭章魚燒與咖啡' }
         ]);
 
@@ -851,10 +1356,10 @@
         });
 
         // 匯率系統 (JPY ➔ TWD)
-        const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate')) || 0.215);
+        const currentJpyRate = ref(Number(localStorage.getItem('cached_jpy_rate_v2')) || 0.215);
         const inputJpyAmount = ref(10000);
         const isRateLoading = ref(false);
-        const rateLastUpdated = ref(localStorage.getItem('jpy_rate_time') || '預設匯率');
+        const rateLastUpdated = ref(localStorage.getItem('jpy_rate_time_v2') || '預設匯率');
 
         const convertedTWD = computed(() => {
           return Math.round((inputJpyAmount.value || 0) * currentJpyRate.value);
@@ -870,8 +1375,8 @@
               const now = new Date();
               const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
               rateLastUpdated.value = timeStr;
-              localStorage.setItem('cached_jpy_rate', currentJpyRate.value);
-              localStorage.setItem('jpy_rate_time', timeStr);
+              localStorage.setItem('cached_jpy_rate_v2', currentJpyRate.value);
+              localStorage.setItem('jpy_rate_time_v2', timeStr);
             }
           } catch (e) {
             console.warn('匯率更新失敗');
@@ -891,7 +1396,7 @@
           '東京': { icon: 'sun', summary: '秋高氣爽 · 晴朗', temp: 17, feelsLike: 16 }
         };
 
-        const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather')) || defaultWeather);
+        const liveWeatherData = ref(JSON.parse(localStorage.getItem('cached_jp_weather_v2')) || defaultWeather);
 
         const currentDay = computed(() => {
           return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0];
@@ -928,7 +1433,7 @@
 
               const now = new Date();
               weatherLastUpdated.value = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-              localStorage.setItem('cached_jp_weather', JSON.stringify(liveWeatherData.value));
+              localStorage.setItem('cached_jp_weather_v2', JSON.stringify(liveWeatherData.value));
             }
           } catch (e) {
             console.warn('氣象讀取異常');
@@ -937,8 +1442,8 @@
           }
         };
 
-        // VJW QR Code 壓縮儲存 (防白屏)
-        const vjwQr = ref(localStorage.getItem('my_vjw_qr') || null);
+        // VJW QR Code 壓縮儲存
+        const vjwQr = ref(localStorage.getItem('my_vjw_qr_v2') || null);
         const showFullScreenQr = ref(false);
 
         const compressImg = (file, maxDim, quality, cb) => {
@@ -964,7 +1469,7 @@
           if (!file) return;
           compressImg(file, 800, 0.8, (base64) => {
             vjwQr.value = base64;
-            localStorage.setItem('my_vjw_qr', base64);
+            localStorage.setItem('my_vjw_qr_v2', base64);
           });
         };
 
@@ -1049,6 +1554,7 @@
           } else {
             items.push({ ...modalScheduleForm.value });
           }
+          localStorage.setItem('jp_trip_v2026', JSON.stringify(itineraryDays.value));
           showScheduleModal.value = false;
         };
 
@@ -1057,6 +1563,7 @@
             const items = currentDay.value.items;
             const idx = items.findIndex(i => i.id === modalScheduleForm.value.id);
             if (idx !== -1) items.splice(idx, 1);
+            localStorage.setItem('jp_trip_v2026', JSON.stringify(itineraryDays.value));
             showScheduleModal.value = false;
           }
         };
@@ -1064,28 +1571,28 @@
         const saveShoppingItem = () => {
           if (!shoppingForm.value.name) return;
           shoppingList.value.push({ id: 's-' + Date.now(), ...shoppingForm.value });
-          localStorage.setItem('jp_shopping', JSON.stringify(shoppingList.value));
+          localStorage.setItem('jp_shopping_v2', JSON.stringify(shoppingList.value));
           showShoppingModal.value = false;
         };
 
         const deleteShoppingItem = (idx) => {
           if (confirm('確定刪除此項目？')) {
             shoppingList.value.splice(idx, 1);
-            localStorage.setItem('jp_shopping', JSON.stringify(shoppingList.value));
+            localStorage.setItem('jp_shopping_v2', JSON.stringify(shoppingList.value));
           }
         };
 
         const saveExpenseItem = () => {
           if (!expenseForm.value.name || !expenseForm.value.amount) return;
           expenses.value.unshift({ id: 'e-' + Date.now(), ...expenseForm.value });
-          localStorage.setItem('jp_expenses', JSON.stringify(expenses.value));
+          localStorage.setItem('jp_expenses_v2', JSON.stringify(expenses.value));
           showExpenseModal.value = false;
         };
 
         const deleteExpense = (idx) => {
           if (confirm('確定刪除此紀錄？')) {
             expenses.value.splice(idx, 1);
-            localStorage.setItem('jp_expenses', JSON.stringify(expenses.value));
+            localStorage.setItem('jp_expenses_v2', JSON.stringify(expenses.value));
           }
         };
 
