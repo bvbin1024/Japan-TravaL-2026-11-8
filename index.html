@@ -56,7 +56,6 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     body { -webkit-tap-highlight-color: transparent; }
     
-    /* 大字體模式 */
     .elderly-mode {
       zoom: 1.15;
     }
@@ -189,8 +188,8 @@
           </button>
         </div>
 
-        <!-- 行程卡片清單 -->
-        <div class="space-y-3">
+        <!-- 行程卡片清單 (含實景照片展示) -->
+        <div class="space-y-3.5">
           <div v-for="(item, idx) in (currentDay?.items || [])" :key="item.id" class="space-y-3">
             
             <!-- 上下行程間的交通資訊 -->
@@ -206,81 +205,106 @@
             <!-- 航班專用卡片 -->
             <div 
               v-if="item.category === '航班'" 
-              class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md relative border border-slate-700"
+              class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl overflow-hidden shadow-md border border-slate-700"
             >
-              <div class="flex justify-between items-center text-xs text-slate-300 pb-2 border-b border-white/10">
-                <span class="font-black tracking-wider">{{ item.name }}</span>
-                <span class="bg-wabi-red px-2 py-0.5 rounded text-[10px] font-bold">{{ item.ticket || '長榮航空' }}</span>
+              <div v-if="item.image" class="w-full h-36 bg-slate-800 relative cursor-pointer" @click="viewFullImage(item.image, item.name)">
+                <img :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-transparent"></div>
+                <span class="absolute bottom-2 right-3 text-[10px] bg-black/60 px-2 py-0.5 rounded-full text-slate-200 flex items-center gap-1">
+                  <app-icon name="maximize-2" class="w-3 h-3" /> 點擊看大圖
+                </span>
               </div>
-              <div class="my-3 text-xs text-slate-200 leading-relaxed">
-                <p class="font-bold">時間：{{ item.hours }}</p>
-                <p class="mt-1 text-amber-200">{{ item.notes }}</p>
-              </div>
-              <div class="pt-2 border-t border-white/10 flex justify-end">
-                <button @click="openGoogleMap(item.address || item.name)" class="text-xs text-slate-200 underline flex items-center gap-1">
-                  <app-icon name="navigation-2" class="w-3.5 h-3.5" /> 機場航廈導航
-                </button>
+
+              <div class="p-4">
+                <div class="flex justify-between items-center text-xs text-slate-300 pb-2 border-b border-white/10">
+                  <span class="font-black tracking-wider">{{ item.name }}</span>
+                  <span class="bg-wabi-red px-2 py-0.5 rounded text-[10px] font-bold">{{ item.ticket || '長榮航空' }}</span>
+                </div>
+                <div class="my-3 text-xs text-slate-200 leading-relaxed">
+                  <p class="font-bold">時間：{{ item.hours }}</p>
+                  <p class="mt-1 text-amber-200">{{ item.notes }}</p>
+                </div>
+                <div class="pt-2 border-t border-white/10 flex justify-end">
+                  <button @click="openGoogleMap(item.address || item.name)" class="text-xs text-slate-200 underline flex items-center gap-1">
+                    <app-icon name="navigation-2" class="w-3.5 h-3.5" /> 機場航廈導航
+                  </button>
+                </div>
               </div>
             </div>
 
-            <!-- 一般行程卡片 -->
+            <!-- 一般行程卡片 (景點/住宿/美食相片化) -->
             <div 
               v-else 
-              class="bg-white rounded-2xl p-4 shadow-2xs border border-wabi-border hover:border-wabi-red/40 transition-all relative"
+              class="bg-white rounded-2xl overflow-hidden shadow-2xs border border-wabi-border hover:border-wabi-red/40 transition-all relative flex flex-col"
             >
-              <div class="flex items-start justify-between">
-                <div class="flex items-center gap-2">
-                  <span :class="categoryBadgeColor(item.category)" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                    {{ item.category }}
-                  </span>
-                  <h3 class="font-bold text-slate-800 text-base leading-snug">{{ item.name }}</h3>
-                </div>
-                <button @click.stop="openEditModal(item)" class="text-slate-300 hover:text-slate-600 p-1">
-                  <app-icon name="pencil" class="w-4 h-4" />
-                </button>
+              <!-- 景點/飯店實景橫幅照片 -->
+              <div 
+                v-if="item.image" 
+                class="w-full h-40 bg-stone-100 relative cursor-pointer overflow-hidden group" 
+                @click="viewFullImage(item.image, item.name)"
+              >
+                <img :src="item.image" :alt="item.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                <span class="absolute bottom-2 right-2 text-[10px] bg-black/60 backdrop-blur-xs text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <app-icon name="image" class="w-3 h-3" /> 實景照片
+                </span>
               </div>
 
-              <!-- 時間與預約/門票資訊 -->
-              <div class="mt-2.5 space-y-1 text-xs text-slate-600">
-                <div v-if="item.hours" class="flex items-center gap-1.5 font-medium">
-                  <app-icon name="clock" class="w-3.5 h-3.5 text-slate-400" />
-                  <span>時間：{{ item.hours }}</span>
+              <div class="p-4">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-center gap-2">
+                    <span :class="categoryBadgeColor(item.category)" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                      {{ item.category }}
+                    </span>
+                    <h3 class="font-bold text-slate-800 text-base leading-snug">{{ item.name }}</h3>
+                  </div>
+                  <button @click.stop="openEditModal(item)" class="text-slate-300 hover:text-slate-600 p-1">
+                    <app-icon name="pencil" class="w-4 h-4" />
+                  </button>
                 </div>
-                <div v-if="item.ticket" class="flex items-center gap-1.5 font-medium">
-                  <app-icon name="ticket" class="w-3.5 h-3.5 text-wabi-red" />
-                  <span class="text-wabi-red font-bold">門票 / 資訊：{{ item.ticket }}</span>
+
+                <!-- 時間與預約/門票資訊 -->
+                <div class="mt-2.5 space-y-1 text-xs text-slate-600">
+                  <div v-if="item.hours" class="flex items-center gap-1.5 font-medium">
+                    <app-icon name="clock" class="w-3.5 h-3.5 text-slate-400" />
+                    <span>時間：{{ item.hours }}</span>
+                  </div>
+                  <div v-if="item.ticket" class="flex items-center gap-1.5 font-medium">
+                    <app-icon name="ticket" class="w-3.5 h-3.5 text-wabi-red" />
+                    <span class="text-wabi-red font-bold">門票 / 資訊：{{ item.ticket }}</span>
+                  </div>
                 </div>
-              </div>
 
-              <!-- 餐廳預約代號「一鍵複製」專用模組 -->
-              <div v-if="item.bookingCode" class="mt-2.5 p-2 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between">
-                <div class="text-xs">
-                  <span class="text-slate-500 font-medium">預約代號：</span>
-                  <span class="font-black text-amber-900 tracking-wider ml-1">{{ item.bookingCode }}</span>
+                <!-- 餐廳預約代號「一鍵複製」 -->
+                <div v-if="item.bookingCode" class="mt-2.5 p-2 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between">
+                  <div class="text-xs">
+                    <span class="text-slate-500 font-medium">預約代號：</span>
+                    <span class="font-black text-amber-900 tracking-wider ml-1">{{ item.bookingCode }}</span>
+                  </div>
+                  <button 
+                    @click="copyText(item.bookingCode)" 
+                    class="text-[11px] bg-amber-200/80 hover:bg-amber-300 text-amber-900 font-bold px-2.5 py-1 rounded-lg transition active:scale-95 flex items-center gap-1"
+                  >
+                    <app-icon name="copy" class="w-3 h-3" />
+                    <span>複製代號</span>
+                  </button>
                 </div>
-                <button 
-                  @click="copyText(item.bookingCode)" 
-                  class="text-[11px] bg-amber-200/80 hover:bg-amber-300 text-amber-900 font-bold px-2.5 py-1 rounded-lg transition active:scale-95 flex items-center gap-1"
-                >
-                  <app-icon name="copy" class="w-3 h-3" />
-                  <span>複製代號</span>
-                </button>
-              </div>
 
-              <!-- 長輩動線貼心備註 -->
-              <div v-if="item.notes" class="mt-2.5 bg-stone-50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-stone-100">
-                {{ item.notes }}
-              </div>
+                <!-- 長輩動線貼心備註 -->
+                <div v-if="item.notes" class="mt-2.5 bg-stone-50 p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed border border-stone-100">
+                  {{ item.notes }}
+                </div>
 
-              <!-- 底部按鈕區：Google Maps 導航 -->
-              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end">
-                <button 
-                  @click.stop="openGoogleMap(item.mapQuery || item.address || item.name)"
-                  class="flex items-center gap-1.5 text-xs font-bold text-wabi-red hover:text-wabi-darkred bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition"
-                >
-                  <app-icon name="navigation-2" class="w-3.5 h-3.5" />
-                  <span>Google Maps 導航</span>
-                </button>
+                <!-- 底部按鈕區：Google Maps 導航 -->
+                <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end">
+                  <button 
+                    @click.stop="openGoogleMap(item.mapQuery || item.address || item.name)"
+                    class="flex items-center gap-1.5 text-xs font-bold text-wabi-red hover:text-wabi-darkred bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition"
+                  >
+                    <app-icon name="navigation-2" class="w-3.5 h-3.5" />
+                    <span>Google Maps 導航</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -477,7 +501,6 @@
           </div>
 
           <div class="space-y-2 text-xs">
-            <!-- 觀光局全天候專線 -->
             <div class="p-3 bg-amber-50/80 border border-amber-200 rounded-xl">
               <div class="flex justify-between items-center">
                 <span class="font-bold text-amber-900">JNTO 日本觀光局 24小時多語言熱線</span>
@@ -486,7 +509,6 @@
               <p class="text-[11px] text-amber-800 mt-1">電話：050-3816-2720（事故、生病就醫、中文翻譯專用）</p>
             </div>
 
-            <!-- 當地急難 -->
             <div class="grid grid-cols-2 gap-2">
               <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200/80">
                 <div class="font-bold text-slate-800">警察緊急報案</div>
@@ -500,7 +522,6 @@
               </div>
             </div>
 
-            <!-- 駐日辦事處 -->
             <div class="p-3 bg-stone-50 rounded-xl border border-stone-200/80 space-y-1.5">
               <div class="font-bold text-slate-800">台灣駐日代表處 24小時急難救助</div>
               <div class="flex justify-between items-center text-[11px] text-slate-600">
@@ -522,15 +543,15 @@
       </section>
 
 
-      <!-- ================= 3. 必買清單 (城市動態切換 + 個人採購籃) ================= -->
+      <!-- ================= 3. 必買清單 ================= -->
       <section v-show="currentTab === 'shopping'" class="space-y-4">
         
-        <!-- 城市選單膠囊列 (隨行程自動感應或自由手動切換) -->
+        <!-- 城市選單膠囊列 -->
         <div class="bg-white p-3 rounded-2xl shadow-2xs border border-wabi-border">
           <div class="flex justify-between items-center mb-2">
             <span class="text-xs font-black text-slate-800 flex items-center gap-1">
               <app-icon name="map-pin" class="w-3.5 h-3.5 text-wabi-red" />
-              <span>當季伴手禮推薦（依城市靈活切換）</span>
+              <span>當季伴手禮推薦（依城市切換）</span>
             </span>
             <span class="text-[10px] bg-red-50 text-wabi-red px-2 py-0.5 rounded-full font-bold">點擊一鍵加入</span>
           </div>
@@ -550,7 +571,7 @@
           </div>
         </div>
 
-        <!-- 當前城市必買推薦卡片區 -->
+        <!-- 伴手禮推薦卡片 -->
         <div class="space-y-2.5">
           <div class="flex justify-between items-center px-1">
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wide">
@@ -589,7 +610,6 @@
           </div>
         </div>
 
-        <!-- 區隔線 -->
         <div class="flex items-center gap-2 py-1">
           <div class="h-px bg-stone-200 flex-1"></div>
           <span class="text-[11px] font-bold text-slate-400">我的個人採購籃 ({{ shoppingList.length }})</span>
@@ -636,7 +656,7 @@
       </section>
 
 
-      <!-- ================= 4. 花費記帳 (幣別日幣 JPY 轉 TWD) ================= -->
+      <!-- ================= 4. 花費記帳 ================= -->
       <section v-show="currentTab === 'expenses'" class="space-y-4">
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden">
           <span class="text-xs uppercase font-black text-amber-300 tracking-wider">Total Expenses</span>
@@ -695,7 +715,25 @@
       <app-icon name="plus" class="w-7 h-7" />
     </button>
 
-    <!-- 彈出視窗：長輩手指日語大字燈箱 (雙保險真人語音) -->
+    <!-- 景點照片全螢幕放大燈箱 -->
+    <div 
+      v-if="fullScreenPhoto" 
+      @click="fullScreenPhoto = null" 
+      class="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 backdrop-blur-md cursor-pointer"
+    >
+      <div class="max-w-md w-full flex flex-col items-center" @click.stop>
+        <div class="w-full flex justify-between items-center text-white mb-2.5 px-1">
+          <span class="text-sm font-bold truncate">{{ fullScreenPhoto.title }}</span>
+          <button @click="fullScreenPhoto = null" class="p-1 hover:text-amber-300">
+            <app-icon name="x" class="w-6 h-6" />
+          </button>
+        </div>
+        <img :src="fullScreenPhoto.url" class="w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl" />
+        <p class="text-xs text-slate-400 mt-3 text-center">輕觸任意處關閉放大視窗</p>
+      </div>
+    </div>
+
+    <!-- 彈出視窗：手指日語大字燈箱 -->
     <div 
       v-if="selectedPhrase" 
       @click="selectedPhrase = null" 
@@ -707,7 +745,6 @@
         <h2 class="text-2xl font-black text-slate-900 mt-3 leading-snug">{{ selectedPhrase.jp }}</h2>
         <p class="text-base font-bold text-slate-500 mt-2">（{{ selectedPhrase.zh }}）</p>
 
-        <!-- 播放發音按鈕 -->
         <button 
           @click="speakJapanese(selectedPhrase.jp)"
           class="mt-5 px-5 py-2.5 bg-red-50 hover:bg-red-100 text-wabi-red font-black text-sm rounded-full flex items-center gap-2 border border-red-200 transition active:scale-95 shadow-xs"
@@ -745,7 +782,7 @@
       </div>
     </div>
 
-    <!-- 彈出視窗 1：新增/編輯 行程 Modal -->
+    <!-- 彈出視窗 1：新增/編輯 行程 Modal (支援上傳更換照片) -->
     <div v-if="showScheduleModal" class="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-xs">
       <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl max-h-[90vh] overflow-y-auto p-5 space-y-4">
         <div class="flex justify-between items-center border-b pb-2">
@@ -771,6 +808,15 @@
           <div>
             <label class="font-bold text-slate-700 block mb-1">名稱 / 地點</label>
             <input v-model="modalScheduleForm.name" type="text" placeholder="例如：金閣寺、HARBS 甜點" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-xl font-bold" />
+          </div>
+
+          <!-- 上傳/更換景點照片 -->
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">景點/飯店實景照片</label>
+            <input type="file" accept="image/*" @change="handleScheduleImageUpload" class="w-full text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:bg-red-50 file:text-wabi-red font-bold" />
+            <div v-if="modalScheduleForm.image" class="mt-2 w-full h-28 rounded-xl overflow-hidden border">
+              <img :src="modalScheduleForm.image" class="w-full h-full object-cover" />
+            </div>
           </div>
 
           <div>
@@ -843,7 +889,7 @@
       </div>
     </div>
 
-    <!-- 彈出視窗 3：新增花費 Modal (日幣 JPY) -->
+    <!-- 彈出視窗 3：新增花費 Modal -->
     <div v-if="showExpenseModal" class="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-xs">
       <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4">
         <div class="flex justify-between items-center border-b pb-2">
@@ -907,7 +953,7 @@
   <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
-    // 行程資料庫
+    // 日本行程完整資料庫（各景點飯店已預設高解析實景照片）
     const EMBEDDED_TRIP_DATA = {
       title: "Japan Journey 2026",
       subtitle: "關西・南紀勝浦・京都・東京",
@@ -989,16 +1035,18 @@
               hours: "06:30 - 09:50",
               notes: "抵達關西機場第一航廈。入境後搭乘南海電鐵特急 Rapi:t 前往難波站。",
               address: "関西国際空港 第1ターミナル",
-              mapQuery: "関西国際空港"
+              mapQuery: "関西国際空港",
+              image: "https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=600&q=75"
             },
             {
               id: "d1-hotel-drop",
               category: "住宿",
-              name: "MIMARU 大阪心齋橋 寄存行李",
+              name: "MIMARU 大阪心齋橋 CENTRAL 寄存行李",
               hours: "約 11:45 抵達",
-              notes: "自難波站搭乘計程車約5分鐘抵達飯店，先放行李後輕裝出遊。",
+              notes: "自難波站搭計程車約5分鐘抵達飯店。公寓式風格木質大廳，先放行李後輕裝出遊。",
               address: "大阪府大阪市中央区南船場4-11-20",
               mapQuery: "MIMARU 大阪 心斎橋 CENTRAL",
+              image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "train",
               transitTime: "約 50 分鐘 (南海電鐵 Rapi:t)"
             },
@@ -1011,6 +1059,7 @@
               notes: "拱廊商店街遮陽避雨且全程平坦，長輩可悠閒品嚐章魚燒、喫茶咖啡。",
               address: "大阪府大阪市中央区道頓堀",
               mapQuery: "道頓堀 グリコサイン",
+              image: "https://images.unsplash.com/photo-1590559899731-a372a142129d?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "footprints",
               transitTime: "步行約 5 分鐘"
             },
@@ -1024,6 +1073,7 @@
               notes: "建議自飯店搭計程車直達梅田餐廳，避免長輩在梅田地下迷航。",
               address: "大阪府大阪市北区梅田2-2-22",
               mapQuery: "焼肉うしごろ 梅田店",
+              image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "計程車約 15 分鐘"
             }
@@ -1047,6 +1097,7 @@
               notes: "從天王寺或新大阪站上車。沿途飽覽和歌山蔚藍太平洋海景，全程舒適安坐。",
               address: "和歌山県東牟婁郡那智勝浦町大字築地６丁目 紀伊勝浦駅",
               mapQuery: "JR 紀伊勝浦駅",
+              image: "https://images.unsplash.com/photo-1508873696983-2df5293cb395?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "train",
               transitTime: "特急列車約 3.5~4 小時"
             },
@@ -1058,6 +1109,7 @@
               notes: "抵達紀伊勝浦站後搭乘專用接駁車前往飯店，享受全包式溫泉服務。",
               address: "和歌山県東牟婁郡那智勝浦町勝浦216-19",
               mapQuery: "TAOYA 那智勝浦",
+              image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "bus",
               transitTime: "接駁車約 10 分鐘"
             },
@@ -1069,7 +1121,8 @@
               ticket: "房客全包式免費服務",
               notes: "泡湯欣賞勝浦港海灣夕陽，大廳酒廊免費提供生啤酒、軟飲與精緻點心。",
               address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦"
+              mapQuery: "TAOYA 那智勝浦",
+              image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=75"
             },
             {
               id: "d2-dinner",
@@ -1078,7 +1131,8 @@
               hours: "18:30 - 20:30",
               notes: "享用在地生黑鮪魚、黑毛和牛與現做海鮮料理，步調放鬆無負擔。",
               address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦"
+              mapQuery: "TAOYA 那智勝浦",
+              image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=75"
             }
           ]
         },
@@ -1101,6 +1155,7 @@
               notes: "日本第一名瀑。長輩建議搭車至飛瀧神社入口處下車，完全避開古道大石階梯。",
               address: "和歌山県東牟婁郡那智勝浦町那智山 那智の滝",
               mapQuery: "那智の滝",
+              image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "計程車/專車約 20 分鐘"
             },
@@ -1112,6 +1167,7 @@
               notes: "品嚐全日本第一「不經冷凍、產地直送」的熟成生黑鮪魚丼飯與定食。",
               address: "和歌山県東牟婁郡那智勝浦町築地7-12",
               mapQuery: "勝浦漁港 にぎわい市場",
+              image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "約 15 分鐘"
             },
@@ -1124,6 +1180,7 @@
               notes: "平穩坐於遊覽船內欣賞外海奇岩島嶼，免步行極致放鬆。",
               address: "和歌山県東牟婁郡那智勝浦町勝浦 勝浦港観光船のりば",
               mapQuery: "紀の松島めぐり遊覧船",
+              image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "sailboat",
               transitTime: "步行約 3 分鐘"
             },
@@ -1134,7 +1191,8 @@
               hours: "18:30",
               notes: "返回飯店泡湯放鬆並享用豐盛晚餐。",
               address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦"
+              mapQuery: "TAOYA 那智勝浦",
+              image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=75"
             }
           ]
         },
@@ -1156,6 +1214,7 @@
               notes: "紀伊勝浦站出發，安坐車廂內欣賞海岸與鄉村風景，直抵京都站。",
               address: "京都府京都市下京区東塩小路高倉町8-3 京都駅",
               mapQuery: "JR 京都駅",
+              image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "train",
               transitTime: "特急直達約 3.5~4 小時"
             },
@@ -1167,6 +1226,7 @@
               notes: "自京都站搭乘計程車約8分鐘抵達飯店，稍作梳洗休息。",
               address: "京都府京都市下京区西石垣通五条下る平居町17-1",
               mapQuery: "MIMARU京都 河原町五条",
+              image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
             },
@@ -1179,6 +1239,7 @@
               notes: "秋意漸濃的鴨川旁平坦步道，伴隨微風散步拍照非常舒適。",
               address: "京都府京都市下京区 四条大橋",
               mapQuery: "四条大橋 鴨川",
+              image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "footprints",
               transitTime: "步行約 5 分鐘"
             },
@@ -1190,6 +1251,7 @@
               notes: "京都地道精緻家常菜與和風割烹居酒料理，環境舒適雅緻。",
               address: "京都府京都市下京区仏光寺通烏丸東入上柳町315-4",
               mapQuery: "中島家 京都",
+              image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "步行或短程計程車即達"
             }
@@ -1213,6 +1275,7 @@
               notes: "今日全程專屬包車直達天橋立與伊根，長輩免舟車勞頓與轉車之苦。",
               address: "京都府京都市下京区西石垣通五条下る平居町17-1",
               mapQuery: "MIMARU京都 河原町五条",
+              image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "專車前往宮津天橋立約 100 分鐘"
             },
@@ -1225,6 +1288,7 @@
               notes: "搭乘平穩安全的單軌斜坡車直達景觀台，長輩免走陡坡即可俯瞰日本三景。",
               address: "京都府宮津市字大垣75 傘松公園",
               mapQuery: "傘松公園 ケーブルカー",
+              image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "mountain",
               transitTime: "搭乘斜坡車約 5 分鐘"
             },
@@ -1235,7 +1299,8 @@
               hours: "12:00 - 13:00",
               notes: "品嚐丹後若狹灣新鮮海鮮丼、烤魚定食。",
               address: "京都府宮津市文珠 天橋立桟橋周辺",
-              mapQuery: "天橋立桟橋"
+              mapQuery: "天橋立桟橋",
+              image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=75"
             },
             {
               id: "d5-ine-cruise",
@@ -1246,6 +1311,7 @@
               notes: "從海上遠眺230間傳統水上舟屋，船上可餵海鷗。隨後在舟屋咖啡館坐下飲茶。",
               address: "京都府与謝郡伊根町日出11 伊根湾めぐり遊覧船",
               mapQuery: "伊根湾めぐり遊覧船のりば",
+              image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "sailboat",
               transitTime: "包車驅車約 30 分鐘抵達伊根"
             },
@@ -1257,6 +1323,7 @@
               notes: "專車約 17:30 返回京都飯店休整，晚間前往精緻餐酒館 Lugol 享用晚餐。",
               address: "京都府京都市中京区烏丸通蛸薬師西入る橋弁慶町222",
               mapQuery: "Lugol Kyoto",
+              image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "計程車約 10 分鐘"
             }
@@ -1280,6 +1347,7 @@
               notes: "京都站搭乘新幹線直達東京站，平穩疾馳約 2 小時 15 分，車上享受鐵道便當與熱咖啡。",
               address: "東京都千代田区丸の内１丁目 東京駅",
               mapQuery: "JR 東京駅",
+              image: "https://images.unsplash.com/photo-1508873696983-2df5293cb395?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "train",
               transitTime: "新幹線 2h 15m"
             },
@@ -1291,6 +1359,7 @@
               notes: "東京站搭計程車5分鐘即達飯店。環境雅緻清幽，周邊生活機能極佳。",
               address: "東京都中央区銀座5-13-12",
               mapQuery: "ホテルグランバッハ東京銀座",
+              image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
             },
@@ -1303,6 +1372,7 @@
               notes: "GINZA SIX 內部挑高舒適、空調宜人且休息座椅豐富，長輩逛街毫無壓力。",
               address: "東京都中央区銀座6-10-1",
               mapQuery: "GINZA SIX",
+              image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "footprints",
               transitTime: "步行約 3 分鐘"
             },
@@ -1313,7 +1383,8 @@
               hours: "18:30 - 20:00",
               notes: "於銀座四丁目附近享用老舖洋食或板前壽司，散步回飯店。",
               address: "東京都中央区銀座４丁目",
-              mapQuery: "銀座四丁目交差点"
+              mapQuery: "銀座四丁目交差点",
+              image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=75"
             }
           ]
         },
@@ -1336,6 +1407,7 @@
               notes: "櫸樹林蔭大道地勢平緩，欣賞大師建築外觀，漫步選品店，步調悠閒。",
               address: "東京都渋谷区神宮前４丁目１２−１０",
               mapQuery: "表参道ヒルズ",
+              image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "銀座搭計程車約 15 分鐘"
             },
@@ -1348,6 +1420,7 @@
               notes: "全日本最新地標。中央廣場綠意盎然，全區無障礙電梯與坡道完善，長輩參觀輕鬆舒服。",
               address: "東京都港区麻布台１丁目３−１",
               mapQuery: "麻布台ヒルズ",
+              image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "計程車約 10 分鐘"
             },
@@ -1361,6 +1434,7 @@
               notes: "Ushigoro 旗下最高殿堂全包廂個室服務，專人代烤頂級黑毛和牛全餐。",
               address: "東京都中央区銀座7-7-7 銀座777ビル 6F",
               mapQuery: "USHIGORO S. GINZA",
+              image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "計程車約 10 分鐘返銀座"
             }
@@ -1385,6 +1459,7 @@
               notes: "星期日丸之內仲通轉為徒步區，可悠閒散步至皇居二重橋與楠木正成銅像拍合照。",
               address: "東京都千代田区皇居外苑１−１",
               mapQuery: "楠木正成像",
+              image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
             },
@@ -1396,6 +1471,7 @@
               notes: "集中在銀座採購日本銘菓、保養品與文具，退稅櫃台動線清晰，隨時可回飯店放戰利品。",
               address: "東京都中央区銀座4-6-16",
               mapQuery: "銀座三越",
+              image: "https://images.unsplash.com/photo-1590559899731-a372a142129d?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "footprints",
               transitTime: "步行約 4 分鐘"
             },
@@ -1406,7 +1482,8 @@
               hours: "18:30",
               notes: "旅程最後一晚在銀座享用精緻日式割烹或天婦羅，晚間整理行李備戰回程。",
               address: "東京都中央区銀座",
-              mapQuery: "銀座駅"
+              mapQuery: "銀座駅",
+              image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=75"
             }
           ]
         },
@@ -1425,6 +1502,7 @@
               notes: "建議預約專車接送或搭乘計程車至東京站轉乘 成田特快 N'EX 直達第二航廈。",
               address: "千葉県成田市古込1-1 成田国際空港 第2ターミナル",
               mapQuery: "成田国際空港 第2ターミナル",
+              image: "https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=600&q=75",
               transitModeIcon: "train",
               transitTime: "專車/特快約 60~75 分鐘"
             },
@@ -1436,34 +1514,28 @@
               ticket: "BR183 成田T2 ➔ 桃園T2",
               notes: "10:15 抵達航廈辦理登機、安檢與免稅購物。16:05 順利返抵國門。",
               address: "成田国際空港 第2ターミナル",
-              mapQuery: "成田国際空港 第2ターミナル"
+              mapQuery: "成田国際空港 第2ターミナル",
+              image: "https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=600&q=75"
             }
           ]
         }
       ]
     };
 
-    // 精選城市伴手禮推薦庫（長輩友善、常溫便攜、各城市地道首選）
+    // 精選城市伴手禮推薦庫
     const CITY_SOUVENIRS = [
-      // 大阪
       { city: '大阪', name: "Bâton d'or 頂級奶油酥條", desc: "固力果旗艦排隊名菓，濃醇發酵奶油香氣，老少咸宜。", tag: "百貨限定", location: "阪急梅田 / 難波高島屋" },
       { city: '大阪', name: "一心堂 水果大福", desc: "嚴選季節完熟哈密瓜、水蜜桃，外皮軟糯清甜不膩。", tag: "長輩最愛", location: "阪急百貨梅田總店 B1" },
       { city: '大阪', name: "呼吸巧克力 (呼吸チョコ)", desc: "杏仁外裹醇濃馬斯卡彭起司巧克力，曾獲全國菓子大賞。", tag: "經典伴手", location: "關西機場免稅 / 難波站" },
       { city: '大阪', name: "551 蓬萊 鮮肉包 / 燒賣", desc: "大阪靈魂美食，長輩回飯店當宵夜的絕佳點心。", tag: "現做美味", location: "新大阪 / 梅田 / 難波站" },
-      
-      // 和歌山勝浦
       { city: '南紀勝浦', name: "紀州南高梅 (蜂蜜/減鹽)", desc: "和歌山特產頂級梅干，肉厚柔嫩，健康生津開胃。", tag: "養生首選", location: "勝浦漁港市場 / 飯店賣店" },
       { city: '南紀勝浦', name: "熟成生黑鮪魚 角煮/佃煮", desc: "勝浦產地直送鮮黑鮪魚特調佃煮，常溫真空好攜帶，配粥絕品。", tag: "產地直送", location: "勝浦漁港 にぎわい市場" },
       { city: '南紀勝浦', name: "那智黑飴 (熊野黑糖名菓)", desc: "以熊野黑石為意象，古法熬煉天然純黑糖，潤喉爽口。", tag: "名勝名產", location: "那智瀑布參道 / 勝浦車站" },
       { city: '南紀勝浦', name: "和歌山 溫州蜜柑汁/果醬", desc: "100% 完熟蜜柑純榨，香甜醇厚，富含天然維他命 C。", tag: "天然無添加", location: "紀伊勝浦車站土產專櫃" },
-
-      // 京都 & 天橋立
       { city: '京都', name: "丸久小山園 / 辻利 宇治抹茶", desc: "京都百年茶舖精選抹茶粉、烘焙茶茶包，香氣高雅回甘。", tag: "茶道名門", location: "京都站 / 四條河原町" },
       { city: '京都', name: "原了郭 黑七味粉 (木筒裝)", desc: "宮內省御用調味，烘焙研磨七香，灑在蕎麥麵或火鍋上極香。", tag: "百年調味", location: "京都車站伴手禮街 / 祇園" },
       { city: '京都', name: "茅乃舍 經典純天然高湯包", desc: "烤飛魚與柴魚黃金比例，長輩回台煮湯下麵秒變大廚。", tag: "廚房必備", location: "大丸京都店 / 高島屋專櫃" },
       { city: '天橋立', name: "丹後 黑豆米果仙貝", desc: "天橋立沿海丹後產黑大豆製成，鹹香酥脆，高纖無負擔。", tag: "海之京都", location: "傘松公園賣店 / 伊根觀光船碼頭" },
-
-      // 東京銀座
       { city: '東京', name: "銀座木村屋 酒種紅豆麵包", desc: "1874 年明治天皇御用名物，天然酒種發酵外皮與綿密紅豆餡。", tag: "明治老舖", location: "銀座四丁目 木村屋總本店" },
       { city: '東京', name: "NewYork Perfect Cheese", desc: "白巧克力、切達起司與貓舌餅乾完美融合，全東京最熱門伴手禮。", tag: "排隊冠軍", location: "東京車站內 南通路特設櫃" },
       { city: '東京', name: "合利他命 EX Plus 270錠", desc: "舒緩眼睛疲勞、腰酸背痛，長輩日本藥妝必帶保養品。", tag: "長輩常備", location: "銀座松本清 / 堂吉訶德" },
@@ -1521,6 +1593,7 @@
         const tripInfo = ref(EMBEDDED_TRIP_DATA);
         const currentTab = ref('schedule');
         const selectedDateIndex = ref(0);
+        const fullScreenPhoto = ref(null); // 點擊大圖燈箱
         
         // 長輩大字模式
         const isElderlyMode = ref(localStorage.getItem('jp_elderly_mode_v2') === 'true');
@@ -1548,7 +1621,7 @@
 
         const selectedPhrase = ref(null);
 
-        // 雙保險真人語音播放機制 (支援原生 API + 雲端語音保底)
+        // 雙保險真人語音播放機制
         const playFallbackAudio = (text) => {
           try {
             const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=ja&client=tw-ob`;
@@ -1563,28 +1636,20 @@
 
         const speakJapanese = (text) => {
           if (!text) return;
-
-          // 原生 Speech API 嘗試
           if (window.speechSynthesis) {
             try {
               window.speechSynthesis.cancel();
               const utterance = new SpeechSynthesisUtterance(text);
               utterance.lang = 'ja-JP';
-              utterance.rate = 0.85; // 稍慢清晰
+              utterance.rate = 0.85;
               utterance.pitch = 1.0;
-              
-              utterance.onerror = () => {
-                playFallbackAudio(text);
-              };
-
+              utterance.onerror = () => { playFallbackAudio(text); };
               window.speechSynthesis.speak(utterance);
               return;
             } catch(e) {
               console.warn('原生語音異常，轉入保底音訊', e);
             }
           }
-
-          // 保底語音
           playFallbackAudio(text);
         };
 
@@ -1596,7 +1661,7 @@
         // 行程資料 (多重防呆)
         let savedDays = null;
         try {
-          const raw = localStorage.getItem('jp_trip_v2026_clean');
+          const raw = localStorage.getItem('jp_trip_v2026_photo');
           if (raw) {
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed) && parsed.length > 0) savedDays = parsed;
@@ -1613,7 +1678,6 @@
           return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
         });
 
-        // 監聽行程選取的城市，自動切換至該城市的伴手禮推薦
         watch(() => currentDay.value?.location, (newLoc) => {
           if (newLoc && availableCities.includes(newLoc)) {
             activeShoppingCity.value = newLoc;
@@ -1627,7 +1691,6 @@
           return CITY_SOUVENIRS.filter(item => item.city === activeShoppingCity.value);
         });
 
-        // 個人自訂採購籃（初始乾淨為空）
         const shoppingList = ref(JSON.parse(localStorage.getItem('jp_shopping_user_list')) || []);
         const expenses = ref(JSON.parse(localStorage.getItem('jp_expenses_clean')) || []);
 
@@ -1635,7 +1698,6 @@
           return expenses.value.reduce((acc, cur) => acc + (Number(cur.amount) || 0), 0);
         });
 
-        // 一鍵將推薦項目加入個人採購清單
         const addRecommendedToShopping = (rec) => {
           shoppingList.value.push({
             id: 'rec-' + Date.now(),
@@ -1730,7 +1792,6 @@
           }
         };
 
-        // 一鍵複製文字
         const copyText = (txt) => {
           if (!txt) return;
           navigator.clipboard.writeText(txt).then(() => {
@@ -1740,7 +1801,6 @@
           });
         };
 
-        // VJW QR Code 壓縮儲存
         const vjwQr = ref(localStorage.getItem('my_vjw_qr_clean') || null);
         const showFullScreenQr = ref(false);
 
@@ -1777,6 +1837,18 @@
           compressImg(file, 600, 0.75, (base64) => {
             shoppingForm.value.image = base64;
           });
+        };
+
+        const handleScheduleImageUpload = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          compressImg(file, 800, 0.8, (base64) => {
+            modalScheduleForm.value.image = base64;
+          });
+        };
+
+        const viewFullImage = (url, title) => {
+          fullScreenPhoto.value = { url, title };
         };
 
         const changeDate = (idx) => { selectedDateIndex.value = idx; };
@@ -1825,7 +1897,7 @@
         const handleFabClick = () => {
           if (currentTab.value === 'schedule') {
             isEditingSchedule.value = false;
-            modalScheduleForm.value = { id: 'it-' + Date.now(), category: '景點', name: '', hours: '', ticket: '', notes: '', address: '', transitModeIcon: 'train', transitTime: '15 分鐘' };
+            modalScheduleForm.value = { id: 'it-' + Date.now(), category: '景點', name: '', hours: '', ticket: '', notes: '', address: '', image: null, transitModeIcon: 'train', transitTime: '15 分鐘' };
             showScheduleModal.value = true;
           } else if (currentTab.value === 'shopping') {
             shoppingForm.value = { name: '', image: null, notes: '', bought: false };
@@ -1851,7 +1923,7 @@
           } else {
             items.push({ ...modalScheduleForm.value });
           }
-          localStorage.setItem('jp_trip_v2026_clean', JSON.stringify(itineraryDays.value));
+          localStorage.setItem('jp_trip_v2026_photo', JSON.stringify(itineraryDays.value));
           showScheduleModal.value = false;
         };
 
@@ -1860,12 +1932,11 @@
             const items = currentDay.value.items;
             const idx = items.findIndex(i => i.id === modalScheduleForm.value.id);
             if (idx !== -1) items.splice(idx, 1);
-            localStorage.setItem('jp_trip_v2026_clean', JSON.stringify(itineraryDays.value));
+            localStorage.setItem('jp_trip_v2026_photo', JSON.stringify(itineraryDays.value));
             showScheduleModal.value = false;
           }
         };
 
-        // 購物持久化
         const persistShopping = () => {
           localStorage.setItem('jp_shopping_user_list', JSON.stringify(shoppingList.value));
         };
@@ -1884,7 +1955,6 @@
           }
         };
 
-        // 記帳持久化
         const saveExpenseItem = () => {
           if (!expenseForm.value.name || !expenseForm.value.amount) return;
           expenses.value.unshift({ id: 'e-' + Date.now(), ...expenseForm.value });
@@ -1954,6 +2024,9 @@
           saveScheduleItem,
           confirmDeleteScheduleItem,
           handleShoppingImageUpload,
+          handleScheduleImageUpload,
+          fullScreenPhoto,
+          viewFullImage,
           saveShoppingItem,
           deleteShoppingItem,
           persistShopping,
