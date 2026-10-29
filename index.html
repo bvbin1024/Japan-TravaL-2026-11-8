@@ -80,6 +80,7 @@
         <div v-if="dayPlan.banner" class="card p-4 mb-3 border-[#B23A2E]">
           <p v-if="clockOverrideLabel" class="text-base font-bold text-wabi-red">測試時間：{{ clockOverrideLabel }}（日本時間）</p>
           <p class="text-[1.35rem] font-black text-slate-900 leading-snug">{{ dayPlan.banner.text }}</p>
+          <button v-if="dayPlan.phase === 'during'" type="button" class="btn-secondary mt-3" @click="readNextAloud" aria-label="唸下一站">🔊 唸下一站</button>
           <button v-if="dayPlan.banner.query" type="button" class="btn-nav mt-3" @click="openSmartMap(dayPlan.banner.query)" aria-label="導航到下一站">導航</button>
         </div>
 
@@ -109,6 +110,7 @@
           <button type="button" class="btn-secondary mt-3" @click="fetchLiveWeather(currentDay?.location); fetchForecast(currentDay)" :disabled="isWeatherLoading" aria-label="更新天氣">
             {{ isWeatherLoading ? '更新中' : '更新天氣' }}
           </button>
+          <button type="button" class="btn-secondary mt-2" @click="readTodayAloud" aria-label="唸今天的行程">🔊 唸給我聽</button>
           <template v-if="currentDay?.hotel">
             <button type="button" class="btn-nav mt-3" @click="openSmartMap(currentDay.hotel.address)" aria-label="導航到飯店">導航到飯店</button>
             <ride-actions :place="currentDay.hotel" uber-label="回飯店" @show-driver="openDriverCard"></ride-actions>
@@ -120,11 +122,24 @@
           <button type="button" class="btn-secondary" @click="currentTab = 'info'" aria-label="航班飯店與安裝">航班・飯店</button>
         </div>
 
+        <div class="card p-4 mb-3">
+          <h2 class="name">今日路線</h2>
+          <ol class="mt-2 list-decimal space-y-1 pl-6 text-base font-bold text-slate-900">
+            <li v-for="item in currentDay?.items || []" :key="'route-' + item.id">{{ item.name }}</li>
+          </ol>
+          <a v-if="routeUrl" :href="routeUrl" class="btn-nav mt-3" aria-label="開啟今日路線">開啟今日路線</a>
+        </div>
+
         <p class="text-base font-bold text-slate-800 mb-3">叫車前請先安裝 Uber、登入，並綁好付款方式。</p>
 
-        <div class="relative pl-8 space-y-4">
-          <div class="absolute left-[15px] top-3 bottom-5 w-1 bg-wabi-border"></div>
+        <div class="mb-3 flex flex-wrap gap-x-4 gap-y-2 text-base font-bold text-slate-800">
+          <span><i class="mr-1 inline-block h-3 w-3 rounded-sm bg-[#2563EB]"></i>交通・航班</span>
+          <span><i class="mr-1 inline-block h-3 w-3 rounded-sm bg-[#15803D]"></i>景點</span>
+          <span><i class="mr-1 inline-block h-3 w-3 rounded-sm bg-[#C2410C]"></i>美食</span>
+          <span><i class="mr-1 inline-block h-3 w-3 rounded-sm bg-[#7E22CE]"></i>住宿</span>
+        </div>
 
+        <div class="space-y-3">
           <day-card
             v-for="(item, idx) in (currentDay?.items || [])"
             :key="item.id"
@@ -136,12 +151,33 @@
             @edit="openEditModal"
             @show-driver="openDriverCard"
             @show-staff="openStaffCard"
+            @show-credit="openPhotoCredit"
           ></day-card>
         </div>
       </section>
 
       <section v-show="currentTab === 'info'" class="space-y-4">
         <button type="button" class="btn-secondary" @click="currentTab = 'schedule'" aria-label="回到行程">回到行程</button>
+        <div class="card p-4">
+          <h2 class="name">備份</h2>
+          <p class="mt-2 text-base leading-relaxed text-slate-800">可以把記帳、採購、入境 QR Code、家人電話和字體設定存成一個檔案。入境 QR Code 也請另外截一張圖，比較保險。</p>
+          <button type="button" class="btn-nav mt-3" @click="exportBackup" aria-label="匯出備份">匯出備份</button>
+          <label class="btn-secondary mt-2 cursor-pointer">
+            匯入備份
+            <input type="file" accept="application/json,.json" class="hidden" @change="importBackup" />
+          </label>
+        </div>
+        <div class="card p-4">
+          <h2 class="name">照片來源</h2>
+          <p class="mt-2 text-base text-slate-800">只有對得到確切地點的照片才放。沒有照片的站，用顏色圖示代替。</p>
+          <ul class="mt-3 space-y-3">
+            <li v-for="photo in photoList" :key="photo.sourceUrl" class="text-base text-slate-800">
+              <p class="font-black text-slate-900">{{ photo.title }}</p>
+              <p>{{ photo.author }}／{{ photo.licence }}</p>
+              <a :href="photo.sourceUrl" class="font-bold text-wabi-red underline" target="_blank" rel="noopener">查看原圖</a>
+            </li>
+          </ul>
+        </div>
         <div id="install-help" class="card p-4">
           <h2 class="name">加到主畫面</h2>
           <p class="text-base text-slate-800 mt-2 leading-relaxed">加好之後，手機會多一個「日本孝親行」。沒有網路時，先打開過一次的行程、日語卡、緊急電話還是看得到。</p>
@@ -439,6 +475,16 @@
         <p class="text-xl font-bold text-slate-800 mt-2">（{{ selectedPhrase.zh }}）</p>
         <button type="button" class="btn-nav mt-5" @click="speakJapanese(selectedPhrase.jp)" aria-label="播放日語">播放日語</button>
         <button type="button" class="btn-secondary mt-2" @click="selectedPhrase = null" aria-label="關閉">關閉</button>
+      </div>
+    </div>
+
+    <div v-if="photoCredit" class="fixed inset-0 z-[70] bg-black/70 flex items-end justify-center" @click="photoCredit = null">
+      <div class="w-full max-w-[480px] rounded-t-3xl bg-white p-5" @click.stop role="dialog" aria-label="照片來源">
+        <h2 class="name">{{ photoCredit.title }}</h2>
+        <p class="mt-2 text-base leading-relaxed text-slate-800">{{ photoCredit.note }}</p>
+        <p class="mt-2 text-base font-bold text-slate-900">{{ photoCredit.author }}／{{ photoCredit.licence }}</p>
+        <a :href="photoCredit.sourceUrl" class="mt-2 inline-block text-base font-bold text-wabi-red underline" target="_blank" rel="noopener">Wikimedia Commons 原圖</a>
+        <button type="button" class="btn-secondary mt-4" @click="photoCredit = null" aria-label="關閉">關閉</button>
       </div>
     </div>
 
