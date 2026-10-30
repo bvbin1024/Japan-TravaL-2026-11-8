@@ -31,13 +31,17 @@ export const TRIP_DATA = {
         {
           name: "MIMARU 大阪心齋橋 CENTRAL",
           dates: "11/08 - 11/09 (1晚)",
-          address: "大阪府大阪市中央区南船場4-11-20",
+          address: "大阪府大阪市中央区西心斎橋1-9-27",
+          latitude: 34.6733954,
+          longitude: 135.498324,
           phone: "+81 6-6241-7111"
         },
         {
           name: "TAOYA 那智勝浦（TAOYA Nachikatsuura）",
           dates: "11/09 - 11/11 (2晚)",
-          address: "和歌山県東牟婁郡那智勝浦町勝浦216-19",
+          address: "和歌山県東牟婁郡那智勝浦町湯川1108",
+          latitude: 33.6224181,
+          longitude: 135.9421641,
           phone: "+81 570-550-078"
         },
         {
@@ -78,7 +82,9 @@ export const TRIP_DATA = {
           },
           hotel: {
             name: "MIMARU 大阪心齋橋 CENTRAL",
-            address: "大阪府大阪市中央区南船場4-11-20"
+            address: "大阪府大阪市中央区西心斎橋1-9-27",
+            latitude: 34.6733954,
+            longitude: 135.498324
           },
           items: [
             {
@@ -97,8 +103,10 @@ export const TRIP_DATA = {
               name: "MIMARU 大阪心齋橋 CENTRAL 寄存行李",
               hours: "11:45 抵達",
               notes: "自難波站搭乘計程車約5分鐘抵達飯店。木質極簡大廳，先放行李後輕裝出遊。",
-              address: "大阪府大阪市中央区南船場4-11-20",
-              mapQuery: "MIMARU 大阪 心斎橋 CENTRAL",
+              address: "大阪府大阪市中央区西心斎橋1-9-27",
+              latitude: 34.6733954,
+              longitude: 135.498324,
+              mapQuery: "MIMARU大阪 心斎橋CENTRAL 西心斎橋1-9-27",
               transitModeIcon: "train",
               transitTime: "約 50 分鐘 (南海電鐵 Rapi:t)"
             },
@@ -146,7 +154,9 @@ export const TRIP_DATA = {
           },
           hotel: {
             name: "TAOYA 那智勝浦",
-            address: "和歌山県東牟婁郡那智勝浦町勝浦216-19"
+            address: "和歌山県東牟婁郡那智勝浦町湯川1108",
+            latitude: 33.6224181,
+            longitude: 135.9421641
           },
           items: [
             {
@@ -168,8 +178,10 @@ export const TRIP_DATA = {
               name: "TAOYA 那智勝浦 辦理入住",
               hours: "14:30 抵達",
               notes: "抵達紀伊勝浦站後搭乘專用接駁車前往飯店，享受全包式溫泉服務。",
-              address: "和歌山県東牟婁郡那智勝浦町勝浦216-19",
-              mapQuery: "TAOYA 那智勝浦",
+              address: "和歌山県東牟婁郡那智勝浦町湯川1108",
+              latitude: 33.6224181,
+              longitude: 135.9421641,
+              mapQuery: "TAOYA那智勝浦 湯川1108",
               transitModeIcon: "bus",
               transitTime: "接駁車約 10 分鐘"
             },
@@ -180,8 +192,10 @@ export const TRIP_DATA = {
               hours: "15:30 - 18:00",
               ticket: "房客全包式免費服務",
               notes: "泡湯欣賞勝浦港海灣夕陽，大廳酒廊免費提供生啤酒、軟飲與精緻點心。",
-              address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦",
+              address: "和歌山県東牟婁郡那智勝浦町湯川1108",
+              latitude: 33.6224181,
+              longitude: 135.9421641,
+              mapQuery: "TAOYA那智勝浦 湯川1108",
               transitModeIcon: "bed"
             },
             {
@@ -191,8 +205,10 @@ export const TRIP_DATA = {
               hours: "18:30 - 20:30",
               ticket: "溫泉晚宴 · 免額外付費",
               notes: "享用在地生黑鮪魚、黑毛和牛與現做海鮮料理，步調放鬆無負擔。",
-              address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦",
+              address: "和歌山県東牟婁郡那智勝浦町湯川1108",
+              latitude: 33.6224181,
+              longitude: 135.9421641,
+              mapQuery: "TAOYA那智勝浦 湯川1108",
               transitModeIcon: "calculator"
             }
           ]
@@ -210,7 +226,9 @@ export const TRIP_DATA = {
           },
           hotel: {
             name: "TAOYA 那智勝浦",
-            address: "和歌山県東牟婁郡那智勝浦町勝浦216-19"
+            address: "和歌山県東牟婁郡那智勝浦町湯川1108",
+            latitude: 33.6224181,
+            longitude: 135.9421641
           },
           items: [
             {
@@ -260,8 +278,10 @@ export const TRIP_DATA = {
               hours: "18:30",
               ticket: "溫泉晚宴",
               notes: "返回飯店泡湯放鬆並享用豐盛晚餐。",
-              address: "TAOYA 那智勝浦",
-              mapQuery: "TAOYA 那智勝浦",
+              address: "和歌山県東牟婁郡那智勝浦町湯川1108",
+              latitude: 33.6224181,
+              longitude: 135.9421641,
+              mapQuery: "TAOYA那智勝浦 湯川1108",
               transitModeIcon: "calculator"
             }
           ]
