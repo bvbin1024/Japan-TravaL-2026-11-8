@@ -295,6 +295,23 @@ registerSW({
           }
         } catch(e) {}
 
+        // 資料遷移：舊版手機存的行程沒有 11/12 美加茂午餐，自動補上，不動其他使用者修改。
+        if (savedDays) {
+          try {
+            const seedDay = tripInfo.value.days.find(d => (d.items || []).some(i => i.id === 'd5-mikamo-lunch'));
+            const seedStop = seedDay && seedDay.items.find(i => i.id === 'd5-mikamo-lunch');
+            const day = seedDay && savedDays.find(d => d.dateStr === seedDay.dateStr);
+            if (seedStop && day && Array.isArray(day.items) && !day.items.some(i => i.id === 'd5-mikamo-lunch')) {
+              const oldIdx = day.items.findIndex(i => i.id === 'd5-lunch' && i.name === '宮津灣海鮮名物午餐');
+              if (oldIdx >= 0) day.items.splice(oldIdx, 1, { ...seedStop });
+              else {
+                const after = day.items.findIndex(i => i.id === 'd5-amanohashidate');
+                day.items.splice(after >= 0 ? after + 1 : day.items.length, 0, { ...seedStop });
+              }
+              localStorage.setItem('jp_trip_v2026_energy', JSON.stringify(savedDays));
+            }
+          } catch (e) {}
+        }
         const itineraryDays = ref(savedDays || tripInfo.value.days);
 
         const availableCities = ['全部', '大阪', '南紀勝浦', '京都', '天橋立', '東京'];

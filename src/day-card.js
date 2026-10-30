@@ -89,6 +89,10 @@ export const DayCard = {
             <p class="text-[1.6rem] font-black tracking-wider text-slate-900">{{ item.bookingCode }}</p>
           </div>
 
+          <div v-if="item.reservationNote" class="mt-3 rounded-xl border-2 border-[#B23A2E] bg-red-50 p-3">
+            <p class="text-[1.2rem] font-black leading-snug text-[#B23A2E]">📞 {{ item.reservationNote }}</p>
+          </div>
+          <a v-if="item.phone" :href="'tel:' + (item.phoneTel || item.phone)" class="btn-call mt-3" :aria-label="'打電話 ' + item.phone">📞 打電話 {{ item.phone }}</a>
           <p v-if="item.notes" class="mt-3 text-base leading-relaxed text-slate-800">{{ item.notes }}</p>
           <button v-if="photo" type="button" class="mt-2 text-base font-bold text-slate-700 underline" @click="$emit('show-credit', photo)">照片來源</button>
 
