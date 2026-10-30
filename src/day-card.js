@@ -50,8 +50,9 @@ export const DayCard = {
   props: {
     item: { type: Object, required: true },
     showTransit: { type: Boolean, default: false },
+    status: { type: String, default: '' },
   },
-  emits: ['navigate', 'copy', 'edit', 'show-driver'],
+  emits: ['navigate', 'copy', 'edit', 'show-driver', 'show-staff'],
   computed: {
     dotClass() { return dotColor(this.item.category); },
     accentClass() { return accent(this.item.category); },
@@ -61,7 +62,7 @@ export const DayCard = {
     mapQuery() { return this.item.mapQuery || this.item.address || this.item.name; },
   },
   template: `
-    <div class="relative">
+    <div :id="'stop-' + item.id" class="relative" :class="status === 'past' ? 'opacity-60' : ''">
       <div
         class="absolute -left-8 top-3 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center z-10"
         :class="dotClass"
@@ -73,7 +74,8 @@ export const DayCard = {
         交通 {{ item.transitTime }}
       </p>
 
-      <article v-if="item.category === '航班'" class="dark-card rounded-2xl p-4 bg-slate-900 text-white shadow-md">
+      <article v-if="item.category === '航班'" class="dark-card rounded-2xl p-4 bg-slate-900 text-white shadow-md" :class="status === 'now' ? 'ring-4 ring-[#B23A2E]' : ''">
+        <span v-if="status === 'now'" class="inline-block mb-2 bg-wabi-red text-white font-black text-base px-3 py-1 rounded-full">現在</span>
         <div class="flex items-start justify-between gap-2">
           <h3 class="name">{{ item.name }}</h3>
           <span class="shrink-0 bg-wabi-red text-white text-base font-bold px-2 py-1 rounded-lg">{{ item.ticket || '長榮航空' }}</span>
@@ -83,7 +85,8 @@ export const DayCard = {
         <button type="button" class="btn-nav mt-4" @click="$emit('navigate', item.address || item.name)" aria-label="導航到這裡">導航到這裡</button>
       </article>
 
-      <article v-else-if="item.bookingCode || item.category === '美食'" class="card p-4" :class="accentClass">
+      <article v-else-if="item.bookingCode || item.category === '美食'" class="card p-4" :class="[accentClass, status === 'now' ? 'ring-4 ring-[#B23A2E]' : '']">
+        <span v-if="status === 'now'" class="inline-block mb-2 bg-wabi-red text-white font-black text-base px-3 py-1 rounded-full">現在</span>
         <div class="flex flex-wrap items-center gap-2">
           <span :class="badgeClass" class="text-base font-bold px-3 py-1 rounded-full">{{ item.category }}</span>
           <span v-if="isReserved" class="text-base font-black text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">已預約 ✅</span>
@@ -99,6 +102,7 @@ export const DayCard = {
         <div class="mt-4 flex flex-col gap-2">
           <button type="button" class="btn-nav" @click.stop="$emit('navigate', mapQuery)" aria-label="導航到這裡">導航到這裡</button>
           <ride-actions :place="item" @show-driver="$emit('show-driver', $event)"></ride-actions>
+          <button v-if="item.bookingCode" type="button" class="btn-secondary" @click="$emit('show-staff', item)" aria-label="出示給店家">出示給店家</button>
           <button v-if="item.bookingCode" type="button" class="btn-secondary" @click="$emit('copy', item.bookingCode, '預約代號')" aria-label="複製預約碼">複製預約碼</button>
           <div class="grid grid-cols-2 gap-2">
             <button v-if="item.address" type="button" class="btn-secondary" @click="$emit('copy', item.address, '日文地址')" aria-label="複製地址">複製地址</button>
@@ -107,7 +111,8 @@ export const DayCard = {
         </div>
       </article>
 
-      <article v-else class="card p-4" :class="accentClass">
+      <article v-else class="card p-4" :class="[accentClass, status === 'now' ? 'ring-4 ring-[#B23A2E]' : '']">
+        <span v-if="status === 'now'" class="inline-block mb-2 bg-wabi-red text-white font-black text-base px-3 py-1 rounded-full">現在</span>
         <span :class="badgeClass" class="text-base font-bold px-3 py-1 rounded-full">{{ item.category }}</span>
         <h3 class="name mt-2">{{ item.name }}</h3>
         <p v-if="item.hours" class="time mt-2">{{ item.hours }}</p>
