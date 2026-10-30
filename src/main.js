@@ -11,6 +11,17 @@ import { PHOTO_LIST } from './photos.js';
 import { buildBackup, validateBackup } from './backup.js';
 import './styles.css';
 
+// 新版接手後自動重新整理一次，畫面直接換成新版
+if ('serviceWorker' in navigator) {
+  let reloaded = false;
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloaded) return;
+    reloaded = true;
+    window.location.reload();
+  });
+}
+
 registerSW({
   immediate: true,
   onRegisteredSW(_url, registration) {

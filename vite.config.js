@@ -12,7 +12,6 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: false,
       manifestFilename: 'manifest.json',
-      includeAssets: ['icons/*.png', 'images/stops/*.jpg', 'fonts/*.woff2'],
       manifest: {
         name: '日本深度旅遊',
         short_name: '日本深度旅遊',
@@ -38,6 +37,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp,woff2,ico,json}'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
+        // 新版一下載好就立刻接手，不用等使用者把 App 全部關掉
+        skipWaiting: true,
+        clientsClaim: true,
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [
           {
