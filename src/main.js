@@ -5,6 +5,10 @@ import { DayCard } from './day-card.js';
 import { RideActions } from './uber.js';
 import { readNowOverride, tokyoParts, planDay } from './clock.js';
 import { clothingAdvice } from './advice.js';
+import { parseHours } from './clock.js';
+import { dayRouteUrl } from './route.js';
+import { PHOTO_LIST } from './photos.js';
+import { buildBackup, validateBackup } from './backup.js';
 import './styles.css';
 
 registerSW({
@@ -209,23 +213,51 @@ registerSW({
           }
         };
 
-        const speakJapanese = (text) => {
+        const speakText = (text, lang) => {
           if (!text) return;
-          if (window.speechSynthesis) {
-            try {
-              window.speechSynthesis.cancel();
-              const utterance = new SpeechSynthesisUtterance(text);
-              utterance.lang = 'ja-JP';
-              utterance.rate = 0.85;
-              utterance.pitch = 1.0;
-              utterance.onerror = () => { playFallbackAudio(text); };
-              window.speechSynthesis.speak(utterance);
-              return;
-            } catch(e) {
-              console.warn('原生語音異常，轉入保底音訊', e);
-            }
+          if (!window.speechSynthesis) {
+            showToast('這支手機目前不能朗讀，請看畫面上的字');
+            return;
           }
-          playFallbackAudio(text);
+          try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = lang.startsWith('ja') ? 0.85 : 0.95;
+            const voices = window.speechSynthesis.getVoices?.() || [];
+            const prefix = lang.slice(0, 2).toLowerCase();
+            const voice = voices.find((item) => String(item.lang || '').toLowerCase().startsWith(prefix));
+            if (voice) utterance.voice = voice;
+            utterance.onerror = () => {
+              if (lang.startsWith('ja')) playFallbackAudio(text);
+              else showToast('這支手機目前唸不出來，請看畫面上的字');
+            };
+            window.speechSynthesis.speak(utterance);
+          } catch (e) {
+            if (lang.startsWith('ja')) playFallbackAudio(text);
+            else showToast('這支手機目前不能朗讀，請看畫面上的字');
+          }
+        };
+
+        const speakJapanese = (text) => speakText(text, 'ja-JP');
+        const readTodayAloud = () => {
+          const day = currentDay.value || {};
+          const label = dayLabel(day, selectedDateIndex.value);
+          const lines = [`${label.date} ${label.nth} ${day.location || ''}`];
+          (day.items || []).forEach((item) => {
+            const times = parseHours(item.hours);
+            lines.push(`${times ? times.startLabel : ''} ${item.name}`);
+          });
+          if (day.hotel?.name) lines.push(`今晚住 ${day.hotel.name}`);
+          speakText(lines.filter(Boolean).join('。'), 'zh-TW');
+        };
+        const readNextAloud = () => {
+          const text = dayPlan.value.banner?.text;
+          if (!text) {
+            showToast('現在沒有下一站可以唸');
+            return;
+          }
+          speakText(text, 'zh-TW');
         };
 
         const openPhraseModal = (ph) => {
@@ -254,6 +286,7 @@ registerSW({
 
         const dayPlan = computed(() => planDay(itineraryDays.value, nowDate.value));
         const stopStatus = (item) => dayPlan.value.statuses?.[item?.id] || '';
+        const routeUrl = computed(() => dayRouteUrl(currentDay.value?.items || []));
 
         const todayGlanceText = computed(() => {
           const items = currentDay.value?.items || [];
@@ -739,6 +772,38 @@ registerSW({
           localStorage.setItem(FAMILY_KEY, JSON.stringify(familyContacts.value));
         };
 
+        const photoCredit = ref(null);
+        const openPhotoCredit = (photo) => { photoCredit.value = photo; };
+        const exportBackup = () => {
+          const payload = buildBackup(localStorage);
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'japan-trip-backup.json';
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+          showToast('已下載備份。入境 QR Code 也請另外截一張圖');
+        };
+        const importBackup = (event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const parsed = JSON.parse(String(reader.result || ''));
+              const data = validateBackup(parsed);
+              Object.entries(data).forEach(([key, value]) => localStorage.setItem(key, value));
+              showToast('備份已匯入，正在重新整理');
+              setTimeout(() => window.location.reload(), 600);
+            } catch (e) {
+              showToast('這份備份讀不起來，原來的資料沒有改動');
+            }
+          };
+          reader.onerror = () => showToast('這份備份讀不起來，原來的資料沒有改動');
+          reader.readAsText(file);
+        };
+
         onMounted(() => {
           applyFontMode(fontMode.value);
           if (!itineraryDays.value || itineraryDays.value.length === 0) {
@@ -785,7 +850,15 @@ registerSW({
           fetchForecast,
           dayPlan,
           stopStatus,
+          routeUrl,
           clockOverrideLabel,
+          readTodayAloud,
+          readNextAloud,
+          photoList: PHOTO_LIST,
+          photoCredit,
+          openPhotoCredit,
+          exportBackup,
+          importBackup,
           fontMode,
           fontModeLabel,
           cycleFontMode,
