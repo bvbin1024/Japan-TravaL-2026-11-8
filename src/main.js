@@ -193,6 +193,15 @@ registerSW({
           deferredPrompt = null;
           canInstall.value = false;
         };
+        const isStandalone = ref(
+          (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+          (typeof navigator !== 'undefined' && navigator.standalone === true)
+        );
+        window.addEventListener('appinstalled', () => { canInstall.value = false; });
+        const addToHome = () => {
+          if (canInstall.value && deferredPrompt) { promptInstall(); return; }
+          goInstallHelp();
+        };
         const goInstallHelp = () => {
           currentTab.value = 'info';
           setTimeout(() => {
@@ -942,7 +951,9 @@ registerSW({
           fabLabel,
           canInstall,
           promptInstall,
-          goInstallHelp
+          goInstallHelp,
+          isStandalone,
+          addToHome
         };
       }
     });
