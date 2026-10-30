@@ -779,7 +779,7 @@ registerSW({
           const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = 'japan-trip-backup.json';
+          link.download = '日本深度旅遊-備份.json';
           link.click();
           setTimeout(() => URL.revokeObjectURL(link.href), 1000);
           showToast('已下載備份。入境 QR Code 也請另外截一張圖');

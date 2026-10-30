@@ -1,7 +1,6 @@
 export const TRIP_DATA = {
-      title: "Japan Journey 2026",
+      title: "日本深度旅遊",
       subtitle: "關西・南紀勝浦・京都・東京",
-      coverImage: "/images/cover.jpg",
       flights: [
         {
           type: "去程 (台北 ➔ 大阪關西)",
@@ -45,13 +44,17 @@ export const TRIP_DATA = {
           name: "MIMARU 京都 河原町五條",
           dates: "11/11 - 11/13 (2晚)",
           address: "京都府京都市下京区西石垣通五条下る平居町17-1",
-          phone: "+81 75-746-2481"
+          phone: "+81 75-746-2481",
+          latitude: 34.9952444,
+          longitude: 135.7664668
         },
         {
           name: "東京銀座格蘭巴哈酒店 (Hotel GrandBach Tokyo Ginza)",
           dates: "11/13 - 11/16 (3晚)",
           address: "東京都中央区銀座5-13-12",
-          phone: "+81 3-5550-2222"
+          phone: "+81 3-5550-2222",
+          latitude: 35.6686151,
+          longitude: 139.7665053
         }
       ],
       cities: {
@@ -107,6 +110,8 @@ export const TRIP_DATA = {
               ticket: "平緩商店街 · 免門票",
               notes: "拱廊商店街遮陽避雨且全程平坦，長輩可悠閒品嚐章魚燒、喫茶咖啡。",
               address: "大阪府大阪市中央区道頓堀",
+              latitude: 34.6690672,
+              longitude: 135.5013046,
               mapQuery: "道頓堀 グリコサイン",
               transitModeIcon: "footprints",
               transitTime: "步行約 5 分鐘"
@@ -120,6 +125,8 @@ export const TRIP_DATA = {
               bookingCode: "PERQZJ",
               notes: "建議自飯店搭計程車直達梅田餐廳，避免長輩在梅田地下迷航。",
               address: "大阪府大阪市北区梅田2-2-22",
+              latitude: 34.6997745,
+              longitude: 135.4946044,
               mapQuery: "焼肉うしごろ 梅田店",
               transitModeIcon: "car",
               transitTime: "計程車約 15 分鐘"
@@ -149,6 +156,8 @@ export const TRIP_DATA = {
               hours: "10:00 - 14:00",
               notes: "從天王寺或新大阪站上車。沿途飽覽和歌山蔚藍太平洋海景，全程舒適安坐。",
               address: "和歌山県東牟婁郡那智勝浦町大字築地６丁目 紀伊勝浦駅",
+              latitude: 33.6281084,
+              longitude: 135.9418263,
               mapQuery: "JR 紀伊勝浦駅",
               transitModeIcon: "train",
               transitTime: "特急約 3.5~4 小時"
@@ -212,6 +221,8 @@ export const TRIP_DATA = {
               ticket: "瀧御拜所 300円",
               notes: "日本第一名瀑。長輩建議搭車至飛瀧神社入口處下車，完全避開古道大石階梯。",
               address: "和歌山県東牟婁郡那智勝浦町那智山 那智の滝",
+              latitude: 33.6752833,
+              longitude: 135.8876266,
               mapQuery: "那智の滝",
               transitModeIcon: "car",
               transitTime: "計程車/專車約 20 分鐘"
@@ -224,6 +235,8 @@ export const TRIP_DATA = {
               ticket: "黑鮪魚產地直送名店",
               notes: "品嚐全日本第一「不經冷凍、產地直送」的熟成生黑鮪魚丼飯與定食。",
               address: "和歌山県東牟婁郡那智勝浦町築地7-12",
+              latitude: 33.626586,
+              longitude: 135.9439419,
               mapQuery: "勝浦漁港 にぎわい市場",
               transitModeIcon: "car",
               transitTime: "約 15 分鐘"
@@ -266,7 +279,9 @@ export const TRIP_DATA = {
           },
           hotel: {
             name: "MIMARU 京都 河原町五條",
-            address: "京都府京都市下京区西石垣通五条下る平居町17-1"
+            address: "京都府京都市下京区西石垣通五条下る平居町17-1",
+            latitude: 34.9952444,
+            longitude: 135.7664668
           },
           items: [
             {
@@ -276,6 +291,8 @@ export const TRIP_DATA = {
               hours: "10:00 - 14:00",
               notes: "紀伊勝浦站出發，安坐車廂內欣賞海岸與鄉村風景，直抵京都站。",
               address: "京都府京都市下京区東塩小路高倉町8-3 京都駅",
+              latitude: 34.9861909,
+              longitude: 135.7600629,
               mapQuery: "JR 京都駅",
               transitModeIcon: "train",
               transitTime: "特急直達約 3.5~4 小時"
@@ -287,6 +304,8 @@ export const TRIP_DATA = {
               hours: "14:30 辦理入住",
               notes: "自京都站搭乘計程車約8分鐘抵達飯店，稍作梳洗休息。",
               address: "京都府京都市下京区西石垣通五条下る平居町17-1",
+              latitude: 34.9952444,
+              longitude: 135.7664668,
               mapQuery: "MIMARU京都 河原町五条",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
@@ -299,6 +318,8 @@ export const TRIP_DATA = {
               ticket: "平緩河畔 · 免門票",
               notes: "秋意漸濃的鴨川旁平坦步道，伴隨微風散步拍照非常舒適。",
               address: "京都府京都市下京区 四条大橋",
+              latitude: 35.0037898,
+              longitude: 135.7714948,
               mapQuery: "四条大橋 鴨川",
               transitModeIcon: "footprints",
               transitTime: "步行約 5 分鐘"
@@ -331,7 +352,9 @@ export const TRIP_DATA = {
           },
           hotel: {
             name: "MIMARU 京都 河原町五條",
-            address: "京都府京都市下京区西石垣通五条下る平居町17-1"
+            address: "京都府京都市下京区西石垣通五条下る平居町17-1",
+            latitude: 34.9952444,
+            longitude: 135.7664668
           },
           items: [
             {
@@ -342,6 +365,8 @@ export const TRIP_DATA = {
               ticket: "全日專屬專車 · 免轉車奔波",
               notes: "今日全程專屬包車直達天橋立與伊根，長輩免舟車勞頓與轉車之苦。",
               address: "京都府京都市下京区西石垣通五条下る平居町17-1",
+              latitude: 34.9952444,
+              longitude: 135.7664668,
               mapQuery: "MIMARU京都 河原町五条",
               transitModeIcon: "car",
               transitTime: "專車前往宮津約 100 分鐘"
@@ -354,6 +379,8 @@ export const TRIP_DATA = {
               ticket: "單軌斜坡車來回約 680円",
               notes: "搭乘平穩安全的單軌斜坡車直達景觀台，長輩免走陡坡即可俯瞰日本三景。",
               address: "京都府宮津市字大垣75 傘松公園",
+              latitude: 35.5867585,
+              longitude: 135.195117,
               mapQuery: "傘松公園 ケーブルカー",
               transitModeIcon: "mountain",
               transitTime: "搭乘斜坡車約 5 分鐘"
@@ -366,6 +393,8 @@ export const TRIP_DATA = {
               ticket: "丹後新鮮漁獲定食",
               notes: "品嚐丹後若狹灣新鮮海鮮丼、烤魚定食。",
               address: "京都府宮津市文珠 天橋立桟橋周辺",
+              latitude: 35.5585434,
+              longitude: 135.1847388,
               mapQuery: "天橋立桟橋",
               transitModeIcon: "calculator"
             },
@@ -377,6 +406,8 @@ export const TRIP_DATA = {
               ticket: "遊船票 1,000円",
               notes: "從海上遠眺230間傳統水上舟屋，船上可餵海鷗。隨後在舟屋咖啡館坐下飲茶。",
               address: "京都府与謝郡伊根町日出11 伊根湾めぐり遊覧船",
+              latitude: 35.670506,
+              longitude: 135.277374,
               mapQuery: "伊根湾めぐり遊覧船のりば",
               transitModeIcon: "sailboat",
               transitTime: "包車車程約 30 分鐘"
@@ -409,7 +440,9 @@ export const TRIP_DATA = {
           },
           hotel: {
             name: "東京銀座格蘭巴哈酒店",
-            address: "東京都中央区銀座5-13-12"
+            address: "東京都中央区銀座5-13-12",
+            latitude: 35.6686151,
+            longitude: 139.7665053
           },
           items: [
             {
@@ -420,6 +453,8 @@ export const TRIP_DATA = {
               ticket: "新幹線指定席 · 2h 15m",
               notes: "京都站搭乘新幹線直達東京站，平穩疾馳約 2 小時 15 分，車上享受鐵道便當與熱咖啡。",
               address: "東京都千代田区丸の内１丁目 東京駅",
+              latitude: 35.6811505,
+              longitude: 139.7659765,
               mapQuery: "JR 東京駅",
               transitModeIcon: "train",
               transitTime: "新幹線 2h 15m"
@@ -431,6 +466,8 @@ export const TRIP_DATA = {
               hours: "12:45 抵達",
               notes: "東京站搭計程車5分鐘即達飯店。環境雅緻清幽，周邊生活機能極佳。",
               address: "東京都中央区銀座5-13-12",
+              latitude: 35.6686151,
+              longitude: 139.7665053,
               mapQuery: "ホテルグランバッハ東京銀座",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
@@ -443,6 +480,8 @@ export const TRIP_DATA = {
               ticket: "全平坦商場 · 免門票",
               notes: "GINZA SIX 內部挑高舒適、空調宜人且休息座椅豐富，長輩逛街毫無壓力。",
               address: "東京都中央区銀座6-10-1",
+              latitude: 35.6695326,
+              longitude: 139.764049,
               mapQuery: "GINZA SIX",
               transitModeIcon: "footprints",
               transitTime: "步行約 3 分鐘"
@@ -473,7 +512,9 @@ export const TRIP_DATA = {
           },
           hotel: {
             name: "東京銀座格蘭巴哈酒店",
-            address: "東京都中央区銀座5-13-12"
+            address: "東京都中央区銀座5-13-12",
+            latitude: 35.6686151,
+            longitude: 139.7665053
           },
           items: [
             {
@@ -484,6 +525,8 @@ export const TRIP_DATA = {
               ticket: "林蔭步道 · 免門票",
               notes: "櫸樹林蔭大道地勢平緩，欣賞大師建築外觀，漫步選品店，步調悠閒。",
               address: "東京都渋谷区神宮前４丁目１２−１０",
+              latitude: 35.6672123,
+              longitude: 139.7089044,
               mapQuery: "表参道ヒルズ",
               transitModeIcon: "car",
               transitTime: "銀座搭計程車約 15 分鐘"
@@ -496,6 +539,8 @@ export const TRIP_DATA = {
               ticket: "中央花園 · 免門票",
               notes: "全日本最新地標。中央廣場綠意盎然，全區無障礙電梯與坡道完善，長輩參觀輕鬆舒服。",
               address: "東京都港区麻布台１丁目３−１",
+              latitude: 35.6614747,
+              longitude: 139.7408267,
               mapQuery: "麻布台ヒルズ",
               transitModeIcon: "car",
               transitTime: "計程車約 10 分鐘"
@@ -528,7 +573,9 @@ export const TRIP_DATA = {
           },
           hotel: {
             name: "東京銀座格蘭巴哈酒店",
-            address: "東京都中央区銀座5-13-12"
+            address: "東京都中央区銀座5-13-12",
+            latitude: 35.6686151,
+            longitude: 139.7665053
           },
           items: [
             {
@@ -539,6 +586,8 @@ export const TRIP_DATA = {
               ticket: "週日步行者天國 · 免門票",
               notes: "星期日丸之內仲通轉為徒步區，可悠閒散步至皇居二重橋與楠木正成銅像拍合照。",
               address: "東京都千代田区皇居外苑１−１",
+              latitude: 35.6779167,
+              longitude: 139.7584722,
               mapQuery: "楠木正成像",
               transitModeIcon: "car",
               transitTime: "計程車約 8 分鐘"
@@ -550,6 +599,8 @@ export const TRIP_DATA = {
               hours: "14:30 - 18:00",
               notes: "集中在銀座採購日本銘菓、保養品與文具，退稅櫃台動線清晰，隨時可回飯店放戰利品。",
               address: "東京都中央区銀座4-6-16",
+              latitude: 35.6711936,
+              longitude: 139.7659061,
               mapQuery: "銀座三越",
               transitModeIcon: "footprints",
               transitTime: "步行約 4 分鐘"
@@ -587,6 +638,8 @@ export const TRIP_DATA = {
               hours: "09:00 - 10:15",
               notes: "建議預約專車接送或搭乘計程車至東京站轉乘 成田特快 N'EX 直達第二航廈。",
               address: "千葉県成田市古込1-1 成田国際空港 第2ターミナル",
+              latitude: 35.7732544,
+              longitude: 140.3875885,
               mapQuery: "成田国際空港 第2ターミナル",
               transitModeIcon: "train",
               transitTime: "專車/特快約 60~75 分鐘"

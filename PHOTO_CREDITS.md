@@ -12,3 +12,5 @@
 | 皇居外苑散步 | 皇居二重橋。備註有寫到二重橋；導航目標仍是楠木正成銅像，這張不是銅像 | Chris 73 | CC BY-SA 3.0 | https://commons.wikimedia.org/wiki/File:Imperial_Palace_Tokyo_Nijubashi_Bridge.JPG |
 
 沒有放照片的站：航班與機場、各飯店、餐廳、勝浦車站與漁港、遊船、GINZA SIX、表參道、麻布台之丘、伊根舟屋、銀座百貨。原因是找不到能確認就是該棟建築或該店的可再用照片。
+
+2026-10-30：原本頁首的京都街景封面（Unsplash 圖庫照，不是行程中的地點）已移除，頁首改為純色。

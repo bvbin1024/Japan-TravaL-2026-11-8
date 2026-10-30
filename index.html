@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>2026 日本長輩旅遊｜關西・南紀勝浦・京都・東京</title>
+  <title>日本深度旅遊｜關西・南紀勝浦・京都・東京</title>
   <meta name="description" content="2026年11月8日至16日，六位長輩的關西、南紀勝浦、京都、東京行程。" />
   <meta name="theme-color" content="#B23A2E" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="日本孝親行" />
+  <meta name="apple-mobile-web-app-title" content="日本深度旅遊" />
   <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <script>
@@ -38,10 +38,8 @@
       目前沒有網路。行程、日語卡、緊急電話仍可打開。天氣和匯率顯示上次記下的數字。
     </div>
 
-    <header class="relative h-52 w-full overflow-hidden bg-slate-900 shrink-0">
-      <img :src="tripInfo.coverImage" alt="日本旅遊封面" class="w-full h-full object-cover" width="1200" height="800" decoding="async" />
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-slate-900/25"></div>
-      <div class="absolute top-0 left-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] text-white flex justify-between items-start gap-3">
+    <header class="relative w-full overflow-hidden bg-[#7A2A22] shrink-0">
+      <div class="p-4 pt-[max(1rem,env(safe-area-inset-top))] text-white flex justify-between items-start gap-3">
         <div class="min-w-0">
           <p class="text-base font-bold text-white">第 {{ selectedDateIndex + 1 }} 天／共 9 天　{{ currentDay?.location }}</p>
           <h1 class="text-[1.35rem] font-black leading-tight mt-1">{{ tripInfo.title }}</h1>
@@ -180,7 +178,7 @@
         </div>
         <div id="install-help" class="card p-4">
           <h2 class="name">加到主畫面</h2>
-          <p class="text-base text-slate-800 mt-2 leading-relaxed">加好之後，手機會多一個「日本孝親行」。沒有網路時，先打開過一次的行程、日語卡、緊急電話還是看得到。</p>
+          <p class="text-base text-slate-800 mt-2 leading-relaxed">加好之後，手機會多一個「日本深度旅遊」。沒有網路時，先打開過一次的行程、日語卡、緊急電話還是看得到。</p>
           <button v-if="canInstall" type="button" class="btn-nav mt-3" @click="promptInstall" aria-label="安裝到手機">安裝到手機</button>
 
           <h3 class="text-lg font-black text-slate-900 mt-4">iPhone（用 Safari）</h3>
@@ -189,7 +187,7 @@
             <li>點畫面下方的分享按鈕（一個方框，上面有箭頭）。</li>
             <li>往下滑，點「加入主畫面」。</li>
             <li>右上角點「加入」。</li>
-            <li>回到手機桌面，就會看到「日本孝親行」。</li>
+            <li>回到手機桌面，就會看到「日本深度旅遊」。</li>
           </ol>
 
           <h3 class="text-lg font-black text-slate-900 mt-4">Android（用 Chrome）</h3>
@@ -198,7 +196,7 @@
             <li>點右上角三個點。</li>
             <li>點「安裝應用程式」或「加到主畫面」。</li>
             <li>點「安裝」或「新增」。</li>
-            <li>桌面會出現「日本孝親行」。</li>
+            <li>桌面會出現「日本深度旅遊」。</li>
           </ol>
         </div>
 
