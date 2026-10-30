@@ -115,6 +115,12 @@
           </template>
         </div>
 
+<div class="grid grid-cols-1 gap-3 mb-3">
+          <button type="button" @click="searchNearby('toilet')" class="btn-nav min-h-[72px] text-xl" aria-label="搜尋周邊廁所">🚻 搜尋周邊廁所</button>
+          <button type="button" @click="searchNearby('convenience')" class="btn-nav min-h-[72px] text-xl" aria-label="搜尋最近超商">🏪 搜尋最近超商</button>
+        </div>
+        <button v-if="!isStandalone" type="button" class="btn-secondary mb-3 min-h-[64px] text-xl" @click="addToHome" aria-label="加到主畫面">📲 加到主畫面</button>
+
         <div class="grid grid-cols-2 gap-2 mb-3">
           <button type="button" class="btn-secondary" @click="currentTab = 'shopping'" aria-label="購物清單">購物清單</button>
           <button type="button" class="btn-secondary" @click="currentTab = 'info'" aria-label="航班飯店與安裝">航班・飯店</button>
@@ -275,6 +281,10 @@
       </section>
 
       <section v-show="currentTab === 'emergency'" class="space-y-4">
+        <div class="grid grid-cols-1 gap-3">
+          <button type="button" @click="searchNearby('toilet')" class="btn-nav min-h-[72px] text-xl" aria-label="搜尋周邊廁所">🚻 搜尋周邊廁所</button>
+          <button type="button" @click="searchNearby('convenience')" class="btn-nav min-h-[72px] text-xl" aria-label="搜尋最近超商">🏪 搜尋最近超商</button>
+        </div>
         <div class="card p-4">
           <h2 class="name">家人緊急聯絡</h2>
           <p class="text-base text-slate-800 mt-1">自己填姓名和電話。存下來之後，下面會變成可以直接撥打的紅按鈕。這裡不會預先填任何人。</p>
