@@ -406,16 +406,19 @@ export const TRIP_DATA = {
               transitTime: "搭乘斜坡車約 5 分鐘"
             },
             {
-              id: "d5-lunch",
+              id: "d5-mikamo-lunch",
               category: "美食",
-              name: "宮津灣海鮮名物午餐",
+              name: "海鮮.烤貝 美加茂（丹後のごはん処 美加茂）",
               hours: "12:00 - 13:00",
-              ticket: "丹後新鮮漁獲定食",
-              notes: "品嚐丹後若狹灣新鮮海鮮丼、烤魚定食。",
-              address: "京都府宮津市文珠 天橋立桟橋周辺",
-              latitude: 35.5585434,
-              longitude: 135.1847388,
-              mapQuery: "天橋立桟橋",
+              ticket: "日本餐廳 · 價位約 ¥2,000–5,000 · Google 評分 3.9",
+              reservationNote: "需事先電話預訂（Kevin 會打電話訂）",
+              phone: "0772-22-6918",
+              phoneTel: "+81772226918",
+              notes: "中午在天橋立車站附近吃丹後海鮮與烤貝，車站步行約 3 分鐘。",
+              address: "京都府宮津市字文珠484-1",
+              latitude: 35.557293,
+              longitude: 135.183319,
+              mapQuery: "京都府宮津市字文珠484-1 美加茂",
               transitModeIcon: "calculator"
             },
             {
