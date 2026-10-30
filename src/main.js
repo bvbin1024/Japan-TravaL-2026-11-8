@@ -3,6 +3,12 @@ import { registerSW } from 'virtual:pwa-register';
 import { TRIP_DATA } from './trip-data.js';
 import { DayCard } from './day-card.js';
 import { RideActions } from './uber.js';
+import { readNowOverride, tokyoParts, planDay } from './clock.js';
+import { clothingAdvice } from './advice.js';
+import { parseHours } from './clock.js';
+import { dayRouteUrl } from './route.js';
+import { PHOTO_LIST } from './photos.js';
+import { buildBackup, validateBackup } from './backup.js';
 import './styles.css';
 
 registerSW({
@@ -85,6 +91,9 @@ registerSW({
         const tripInfo = ref(TRIP_DATA);
         const currentTab = ref('schedule');
         const selectedDateIndex = ref(0);
+        const nowOverride = readNowOverride(window.location.search);
+        const nowDate = ref(nowOverride || new Date());
+        const clockOverrideLabel = nowOverride ? tokyoParts(nowOverride).label : '';
         
         const isIosDevice = computed(() => {
           return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -119,11 +128,11 @@ registerSW({
           applyFontMode(next);
         };
 
-        const tabs = [
+        const bottomTabs = [
           { id: 'schedule', name: '每日行程', short: '行程', icon: 'map-pin' },
-          { id: 'info', name: '實用資訊', short: '資訊', icon: 'info' },
-          { id: 'shopping', name: '必買清單', short: '購物', icon: 'shopping-bag' },
-          { id: 'expenses', name: '記帳換算', short: '匯率', icon: 'badge-dollar-sign' }
+          { id: 'phrases', name: '日語卡', short: '日語卡', icon: 'message-square' },
+          { id: 'rates', name: '匯率', short: '匯率', icon: 'badge-dollar-sign' },
+          { id: 'emergency', name: '緊急', short: '緊急', icon: 'shield-alert' }
         ];
 
         const WEEKDAY_ZH = { Sun: '日', Mon: '一', Tue: '二', Wed: '三', Thu: '四', Fri: '五', Sat: '六' };
@@ -136,14 +145,15 @@ registerSW({
             nth: `第${index + 1}天`
           };
         };
-        const isToday = (day) => {
-          const now = new Date();
-          const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-          return day?.dateStr === todayStr;
-        };
+        const isToday = (day) => dayPlan.value.phase === 'during' && day?.dateStr === dayPlan.value.tokyo.dateStr;
         const isOffline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false);
         const toast = ref('');
         const driverCard = ref(null);
+        const staffCard = ref(null);
+        const openStaffCard = (item) => {
+          if (!item?.bookingCode) return;
+          staffCard.value = { code: item.bookingCode, name: item.name || '' };
+        };
         const openDriverCard = (place) => {
           if (!place) return;
           driverCard.value = {
@@ -203,23 +213,51 @@ registerSW({
           }
         };
 
-        const speakJapanese = (text) => {
+        const speakText = (text, lang) => {
           if (!text) return;
-          if (window.speechSynthesis) {
-            try {
-              window.speechSynthesis.cancel();
-              const utterance = new SpeechSynthesisUtterance(text);
-              utterance.lang = 'ja-JP';
-              utterance.rate = 0.85;
-              utterance.pitch = 1.0;
-              utterance.onerror = () => { playFallbackAudio(text); };
-              window.speechSynthesis.speak(utterance);
-              return;
-            } catch(e) {
-              console.warn('原生語音異常，轉入保底音訊', e);
-            }
+          if (!window.speechSynthesis) {
+            showToast('這支手機目前不能朗讀，請看畫面上的字');
+            return;
           }
-          playFallbackAudio(text);
+          try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = lang.startsWith('ja') ? 0.85 : 0.95;
+            const voices = window.speechSynthesis.getVoices?.() || [];
+            const prefix = lang.slice(0, 2).toLowerCase();
+            const voice = voices.find((item) => String(item.lang || '').toLowerCase().startsWith(prefix));
+            if (voice) utterance.voice = voice;
+            utterance.onerror = () => {
+              if (lang.startsWith('ja')) playFallbackAudio(text);
+              else showToast('這支手機目前唸不出來，請看畫面上的字');
+            };
+            window.speechSynthesis.speak(utterance);
+          } catch (e) {
+            if (lang.startsWith('ja')) playFallbackAudio(text);
+            else showToast('這支手機目前不能朗讀，請看畫面上的字');
+          }
+        };
+
+        const speakJapanese = (text) => speakText(text, 'ja-JP');
+        const readTodayAloud = () => {
+          const day = currentDay.value || {};
+          const label = dayLabel(day, selectedDateIndex.value);
+          const lines = [`${label.date} ${label.nth} ${day.location || ''}`];
+          (day.items || []).forEach((item) => {
+            const times = parseHours(item.hours);
+            lines.push(`${times ? times.startLabel : ''} ${item.name}`);
+          });
+          if (day.hotel?.name) lines.push(`今晚住 ${day.hotel.name}`);
+          speakText(lines.filter(Boolean).join('。'), 'zh-TW');
+        };
+        const readNextAloud = () => {
+          const text = dayPlan.value.banner?.text;
+          if (!text) {
+            showToast('現在沒有下一站可以唸');
+            return;
+          }
+          speakText(text, 'zh-TW');
         };
 
         const openPhraseModal = (ph) => {
@@ -245,6 +283,10 @@ registerSW({
         const currentDay = computed(() => {
           return itineraryDays.value[selectedDateIndex.value] || itineraryDays.value[0] || {};
         });
+
+        const dayPlan = computed(() => planDay(itineraryDays.value, nowDate.value));
+        const stopStatus = (item) => dayPlan.value.statuses?.[item?.id] || '';
+        const routeUrl = computed(() => dayRouteUrl(currentDay.value?.items || []));
 
         const todayGlanceText = computed(() => {
           const items = currentDay.value?.items || [];
@@ -426,6 +468,46 @@ registerSW({
           return '季節預估，連上網後會更新';
         });
 
+        const FORECAST_KEY = 'cached_jp_forecast_clean';
+        let forecastInit = {};
+        try { forecastInit = JSON.parse(localStorage.getItem(FORECAST_KEY) || '{}') || {}; } catch (e) { forecastInit = {}; }
+        const forecastCache = ref(forecastInit);
+        const forecastOffline = ref(!navigator.onLine);
+        const forecastKey = (day) => day?.dateStr && day?.location ? `${day.dateStr}|${day.location}` : '';
+        const currentForecast = computed(() => forecastCache.value[forecastKey(currentDay.value)] || null);
+        const forecastLabel = computed(() => {
+          const item = currentForecast.value;
+          if (!item) return '這天的預報還沒有抓到';
+          if (forecastOffline.value) return `${item.updatedAt}（離線，這是上次記下的預報）`;
+          return item.updatedAt;
+        });
+
+        const fetchForecast = async (day) => {
+          const key = forecastKey(day);
+          const coords = day?.location ? tripInfo.value.cities?.[day.location] : null;
+          if (!key || !coords) return;
+          if (!navigator.onLine) {
+            forecastOffline.value = true;
+            return;
+          }
+          try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=temperature_2m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo&start_date=${day.dateStr}&end_date=${day.dateStr}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('forecast');
+            const data = await res.json();
+            const advice = clothingAdvice(data);
+            if (!advice) throw new Error('empty forecast');
+            const now = new Date();
+            const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            forecastCache.value = { ...forecastCache.value, [key]: { ...advice, updatedAt: timeStr } };
+            localStorage.setItem(FORECAST_KEY, JSON.stringify(forecastCache.value));
+            forecastOffline.value = false;
+          } catch (e) {
+            forecastOffline.value = true;
+            console.warn('預報讀取異常');
+          }
+        };
+
         const copyText = async (txt, label = '內容') => {
           if (!txt) return;
           const okMsg = `已複製${label}：${txt}`;
@@ -562,7 +644,7 @@ registerSW({
           } else if (currentTab.value === 'shopping') {
             shoppingForm.value = { name: '', image: null, notes: '', bought: false };
             showShoppingModal.value = true;
-          } else if (currentTab.value === 'expenses') {
+          } else if (currentTab.value === 'rates' || currentTab.value === 'expenses') {
             expenseForm.value = { category: '飲食', name: '', date: new Date().toISOString().slice(0, 10), amount: 0, paymentMethod: '信用卡', notes: '' };
             showExpenseModal.value = true;
           }
@@ -629,28 +711,98 @@ registerSW({
           }
         };
 
-        const autoFocusToday = () => {
-          const now = new Date();
-          const y = now.getFullYear();
-          const m = String(now.getMonth() + 1).padStart(2, '0');
-          const d = String(now.getDate()).padStart(2, '0');
-          const todayStr = `${y}-${m}-${d}`;
-
-          const idx = itineraryDays.value.findIndex(day => day.dateStr === todayStr);
-          if (idx !== -1) {
-            selectedDateIndex.value = idx;
-            setTimeout(() => {
-              const el = document.getElementById('day-tab-' + idx);
-              if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center' });
-            }, 300);
+        const scrollToFocus = () => {
+          const plan = dayPlan.value;
+          const tab = document.getElementById('day-tab-' + selectedDateIndex.value);
+          if (tab) tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          if (plan.phase === 'during' && plan.focusId && plan.focusDayIndex === selectedDateIndex.value) {
+            const stop = document.getElementById('stop-' + plan.focusId);
+            if (stop) stop.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
         };
 
+        const autoFocusToday = () => {
+          const plan = dayPlan.value;
+          if (plan.phase === 'during') {
+            const idx = itineraryDays.value.findIndex((day) => day.dateStr === plan.tokyo.dateStr);
+            if (idx !== -1) selectedDateIndex.value = idx;
+          }
+          setTimeout(scrollToFocus, 350);
+        };
+
+        const showFab = computed(() => ['schedule', 'shopping', 'rates', 'expenses'].includes(currentTab.value));
         const fabLabel = computed(() => {
-          if (currentTab.value === 'expenses') return '記帳';
+          if (currentTab.value === 'rates' || currentTab.value === 'expenses') return '記帳';
           if (currentTab.value === 'shopping') return '新增物品';
           return '新增行程';
         });
+
+        const pressKey = (digit) => {
+          const current = String(inputJpyAmount.value || '');
+          const next = (current === '0' ? '' : current) + String(digit);
+          if (next.length > 7) return;
+          inputJpyAmount.value = Number(next);
+        };
+        const clearAmount = () => { inputJpyAmount.value = 0; };
+        const backspaceAmount = () => {
+          const text = String(inputJpyAmount.value || '');
+          inputJpyAmount.value = Number(text.slice(0, -1) || 0);
+        };
+        const setAmount = (amount) => { inputJpyAmount.value = amount; };
+        const expenseTwd = computed(() => Math.round((Number(expenseForm.value.amount) || 0) * currentJpyRate.value));
+
+        const FAMILY_KEY = 'jp_family_contacts';
+        let familyInit = [];
+        try {
+          const parsed = JSON.parse(localStorage.getItem(FAMILY_KEY) || '[]');
+          if (Array.isArray(parsed)) familyInit = parsed;
+        } catch (e) { familyInit = []; }
+        const familyContacts = ref(familyInit);
+        const familyForm = ref({ name: '', phone: '' });
+        const saveFamilyContact = () => {
+          const phone = String(familyForm.value.phone || '').trim();
+          const name = String(familyForm.value.name || '').trim();
+          if (!phone) return;
+          familyContacts.value.push({ id: 'f-' + Date.now(), name, phone });
+          localStorage.setItem(FAMILY_KEY, JSON.stringify(familyContacts.value));
+          familyForm.value = { name: '', phone: '' };
+        };
+        const deleteFamilyContact = (idx) => {
+          familyContacts.value.splice(idx, 1);
+          localStorage.setItem(FAMILY_KEY, JSON.stringify(familyContacts.value));
+        };
+
+        const photoCredit = ref(null);
+        const openPhotoCredit = (photo) => { photoCredit.value = photo; };
+        const exportBackup = () => {
+          const payload = buildBackup(localStorage);
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = '日本深度旅遊-備份.json';
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+          showToast('已下載備份。入境 QR Code 也請另外截一張圖');
+        };
+        const importBackup = (event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const parsed = JSON.parse(String(reader.result || ''));
+              const data = validateBackup(parsed);
+              Object.entries(data).forEach(([key, value]) => localStorage.setItem(key, value));
+              showToast('備份已匯入，正在重新整理');
+              setTimeout(() => window.location.reload(), 600);
+            } catch (e) {
+              showToast('這份備份讀不起來，原來的資料沒有改動');
+            }
+          };
+          reader.onerror = () => showToast('這份備份讀不起來，原來的資料沒有改動');
+          reader.readAsText(file);
+        };
 
         onMounted(() => {
           applyFontMode(fontMode.value);
@@ -660,22 +812,30 @@ registerSW({
           autoFocusToday();
           fetchLiveRates();
           fetchLiveWeather(currentDay.value?.location);
+          fetchForecast(currentDay.value);
+          if (!nowOverride) {
+            setInterval(() => { nowDate.value = new Date(); }, 60000);
+          }
           window.addEventListener('offline', () => {
             isOffline.value = true;
             weatherOffline.value = true;
             rateOffline.value = true;
+            forecastOffline.value = true;
           });
           window.addEventListener('online', () => {
             isOffline.value = false;
             fetchLiveRates();
             fetchLiveWeather(currentDay.value?.location);
+            fetchForecast(currentDay.value);
           });
         });
+
+        watch(currentDay, (day) => { fetchForecast(day); });
 
         return {
           tripInfo,
           currentTab,
-          tabs,
+          bottomTabs,
           selectedDateIndex,
           itineraryDays,
           currentDay,
@@ -685,6 +845,20 @@ registerSW({
           weatherUpdatedLabel,
           weatherOffline,
           fetchLiveWeather,
+          currentForecast,
+          forecastLabel,
+          fetchForecast,
+          dayPlan,
+          stopStatus,
+          routeUrl,
+          clockOverrideLabel,
+          readTodayAloud,
+          readNextAloud,
+          photoList: PHOTO_LIST,
+          photoCredit,
+          openPhotoCredit,
+          exportBackup,
+          importBackup,
           fontMode,
           fontModeLabel,
           cycleFontMode,
@@ -741,6 +915,18 @@ registerSW({
           toast,
           driverCard,
           openDriverCard,
+          staffCard,
+          openStaffCard,
+          pressKey,
+          clearAmount,
+          backspaceAmount,
+          setAmount,
+          expenseTwd,
+          familyContacts,
+          familyForm,
+          saveFamilyContact,
+          deleteFamilyContact,
+          showFab,
           isOffline,
           fabLabel,
           canInstall,

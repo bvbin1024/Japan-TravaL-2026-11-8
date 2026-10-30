@@ -19,14 +19,14 @@ export function uberDropoffUrl(place) {
   const nickname = String(place?.name || place?.address || '').trim();
   const address = String(place?.address || place?.name || '').trim();
   const parts = ['action=setPickup', 'pickup=my_location'];
-  if (nickname) parts.push(`dropoff[nickname]=${encodeURIComponent(nickname)}`);
-  if (address) parts.push(`dropoff[formatted_address]=${encodeURIComponent(address)}`);
   const latitude = finiteCoord(place?.latitude ?? place?.lat);
   const longitude = finiteCoord(place?.longitude ?? place?.lon);
   if (latitude !== null && longitude !== null) {
     parts.push(`dropoff[latitude]=${encodeURIComponent(String(latitude))}`);
     parts.push(`dropoff[longitude]=${encodeURIComponent(String(longitude))}`);
   }
+  if (nickname) parts.push(`dropoff[nickname]=${encodeURIComponent(nickname)}`);
+  if (address) parts.push(`dropoff[formatted_address]=${encodeURIComponent(address)}`);
   return `https://m.uber.com/ul/?${parts.join('&')}`;
 }
 

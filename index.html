@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>2026 日本長輩旅遊｜關西・南紀勝浦・京都・東京</title>
+  <title>日本深度旅遊｜關西・南紀勝浦・京都・東京</title>
   <meta name="description" content="2026年11月8日至16日，六位長輩的關西、南紀勝浦、京都、東京行程。" />
   <meta name="theme-color" content="#B23A2E" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="日本孝親行" />
+  <meta name="apple-mobile-web-app-title" content="日本深度旅遊" />
   <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <script>
@@ -38,10 +38,8 @@
       目前沒有網路。行程、日語卡、緊急電話仍可打開。天氣和匯率顯示上次記下的數字。
     </div>
 
-    <header class="relative h-52 w-full overflow-hidden bg-slate-900 shrink-0">
-      <img :src="tripInfo.coverImage" alt="日本旅遊封面" class="w-full h-full object-cover" width="1200" height="800" decoding="async" />
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-slate-900/25"></div>
-      <div class="absolute top-0 left-0 right-0 p-4 pt-[max(1rem,env(safe-area-inset-top))] text-white flex justify-between items-start gap-3">
+    <header class="relative w-full overflow-hidden bg-[#7A2A22] shrink-0">
+      <div class="p-4 pt-[max(1rem,env(safe-area-inset-top))] text-white flex justify-between items-start gap-3">
         <div class="min-w-0">
           <p class="text-base font-bold text-white">第 {{ selectedDateIndex + 1 }} 天／共 9 天　{{ currentDay?.location }}</p>
           <h1 class="text-[1.35rem] font-black leading-tight mt-1">{{ tripInfo.title }}</h1>
@@ -57,22 +55,6 @@
         </button>
       </div>
     </header>
-
-    <nav class="bg-white border-b-2 border-wabi-border grid grid-cols-4" aria-label="主要功能">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        type="button"
-        @click="currentTab = tab.id"
-        :aria-label="tab.short"
-        :aria-current="currentTab === tab.id ? 'page' : 'false'"
-        class="min-h-[56px] flex flex-col items-center justify-center gap-0.5 text-base font-black"
-        :class="currentTab === tab.id ? 'bg-wabi-red text-white' : 'text-slate-900'"
-      >
-        <app-icon :name="tab.icon" ></app-icon>
-        <span>{{ tab.short }}</span>
-      </button>
-    </nav>
 
     <main class="flex-1 min-h-0 overflow-y-auto px-3 pt-3 pb-4">
 
@@ -93,88 +75,110 @@
           </button>
         </div>
 
-        <button type="button" class="btn-secondary mb-3" @click="goInstallHelp" aria-label="加到主畫面">加到主畫面</button>
-
-        <div class="card px-4 py-3 mb-3 text-base font-bold text-slate-900 flex items-center justify-between gap-3">
-          <p class="min-w-0">{{ todayGlanceText }}</p>
-          <span class="shrink-0 text-base font-black text-wabi-red">{{ currentDay?.items?.length || 0 }} 站行程</span>
+        <div v-if="dayPlan.banner" class="card p-4 mb-3 border-[#B23A2E]">
+          <p v-if="clockOverrideLabel" class="text-base font-bold text-wabi-red">測試時間：{{ clockOverrideLabel }}（日本時間）</p>
+          <p class="text-[1.35rem] font-black text-slate-900 leading-snug">{{ dayPlan.banner.text }}</p>
+          <button v-if="dayPlan.phase === 'during'" type="button" class="btn-secondary mt-3" @click="readNextAloud" aria-label="唸下一站">🔊 唸下一站</button>
+          <button v-if="dayPlan.banner.query" type="button" class="btn-nav mt-3" @click="openSmartMap(dayPlan.banner.query)" aria-label="導航到下一站">導航</button>
         </div>
 
         <div class="card p-4 mb-3">
-          <div class="flex items-center justify-between gap-3">
-            <p class="text-lg font-black text-slate-900">
-              預估步數
-              <span class="text-wabi-red text-[1.35rem]">{{ currentDay?.energy?.steps || '3,000' }}</span>
-              步
-            </p>
-            <span :class="energyBadgeColor(currentDay?.energy?.level)" class="text-base font-black px-3 py-1 rounded-full">
-              {{ currentDay?.energy?.level || '輕鬆' }}
-            </span>
-          </div>
-          <p class="mt-2 text-base font-bold text-slate-800">地形：{{ currentDay?.energy?.terrain || '平坦路面' }}</p>
-          <p class="text-base font-bold text-slate-800">歇腳點：{{ currentDay?.energy?.rest || '隨時可坐' }}</p>
-        </div>
-
-        <div class="card p-4 mb-3">
-          <div class="flex items-start justify-between gap-3">
-            <h2 class="name min-w-0">
-              <app-icon name="map-pin" class="text-wabi-red" ></app-icon>
-              {{ currentDay?.location }}
-            </h2>
-            <button
-              type="button"
-              @click="fetchLiveWeather(currentDay?.location)"
-              :disabled="isWeatherLoading"
-              class="shrink-0 min-h-[48px] px-3 rounded-xl border-2 border-wabi-red text-wabi-red font-black text-base disabled:opacity-60"
-              aria-label="更新天氣"
-            >
-              {{ isWeatherLoading ? '更新中' : '更新天氣' }}
-            </button>
-          </div>
-          <div class="mt-3 flex items-end justify-between gap-3">
-            <div class="min-w-0">
-              <p class="text-xl font-black text-slate-900">{{ currentDayWeather?.summary || '秋高氣爽' }}</p>
-              <p class="mt-1 text-base font-bold text-slate-800">更新時間：{{ weatherUpdatedLabel }}</p>
-            </div>
-            <div class="text-right shrink-0">
-              <p class="text-3xl font-black text-slate-900 leading-none">{{ currentDayWeather?.temp ?? 16 }}°C</p>
-              <p class="mt-1 text-base font-bold text-slate-800">體感 {{ currentDayWeather?.feelsLike ?? 15 }}°C</p>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="currentDay?.hotel" class="card p-4 mb-4">
-          <p class="text-base font-bold text-slate-800">今晚住</p>
-          <p class="name mt-1">
-            <app-icon name="bed" class="text-wabi-red" ></app-icon>
-            {{ currentDay.hotel.name }}
+          <h2 class="text-[1.45rem] font-black text-slate-900 leading-snug">
+            {{ dayLabel(currentDay, selectedDateIndex).date }}
+            <em class="not-italic text-wabi-red">{{ dayLabel(currentDay, selectedDateIndex).nth }}</em>
+            ・{{ currentDay?.location }}
+          </h2>
+          <p class="mt-2 text-lg font-bold text-slate-900">今天 <b>{{ currentDay?.items?.length || 0 }} 個行程</b></p>
+          <p v-if="currentDay?.hotel" class="mt-1 text-lg font-bold text-slate-900">今晚住：<b>{{ currentDay.hotel.name }}</b></p>
+          <p v-else class="mt-1 text-lg font-bold text-slate-900">今晚不住飯店</p>
+          <p class="mt-2 text-lg font-bold text-slate-900">
+            約 <b class="text-wabi-red">{{ currentDay?.energy?.steps || '—' }}</b> 步
+            <span v-if="currentDay?.energy?.level" :class="energyBadgeColor(currentDay.energy.level)" class="ml-1 text-base font-black px-3 py-1 rounded-full">{{ currentDay.energy.level }}</span>
           </p>
-          <button type="button" class="btn-nav mt-3" @click="openSmartMap(currentDay.hotel.address)" aria-label="導航到飯店">導航到飯店</button>
-          <ride-actions :place="currentDay.hotel" uber-label="回飯店" @show-driver="openDriverCard"></ride-actions>
+          <p v-if="currentDay?.energy?.terrain" class="text-base font-bold text-slate-800">地形：{{ currentDay.energy.terrain }}</p>
+          <p v-if="currentDay?.energy?.rest" class="text-base font-bold text-slate-800">歇腳點：{{ currentDay.energy.rest }}</p>
+          <p v-if="currentForecast?.advice" class="mt-3 text-lg font-black text-slate-900 leading-relaxed">{{ currentForecast.advice }}</p>
+          <p v-else class="mt-3 text-base font-bold text-slate-800">這天的穿著預報還沒有抓到。</p>
+          <p v-if="currentForecast && (currentForecast.low != null || currentForecast.high != null)" class="text-base font-bold text-slate-800">
+            最低 {{ currentForecast.low ?? '—' }}°C　最高 {{ currentForecast.high ?? '—' }}°C
+            <template v-if="currentForecast.precipMax != null">　降雨機率 {{ currentForecast.precipMax }}%</template>
+          </p>
+          <p class="text-base font-bold text-slate-800">預報時間：{{ forecastLabel }}</p>
+          <p class="mt-2 text-base font-bold text-slate-800">即時天氣：{{ currentDayWeather?.summary || '還沒更新' }}　{{ currentDayWeather?.temp ?? '—' }}°C　更新時間：{{ weatherUpdatedLabel }}</p>
+          <button type="button" class="btn-secondary mt-3" @click="fetchLiveWeather(currentDay?.location); fetchForecast(currentDay)" :disabled="isWeatherLoading" aria-label="更新天氣">
+            {{ isWeatherLoading ? '更新中' : '更新天氣' }}
+          </button>
+          <button type="button" class="btn-secondary mt-2" @click="readTodayAloud" aria-label="唸今天的行程">🔊 唸給我聽</button>
+          <template v-if="currentDay?.hotel">
+            <button type="button" class="btn-nav mt-3" @click="openSmartMap(currentDay.hotel.address)" aria-label="導航到飯店">導航到飯店</button>
+            <ride-actions :place="currentDay.hotel" uber-label="回飯店" @show-driver="openDriverCard"></ride-actions>
+          </template>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <button type="button" class="btn-secondary" @click="currentTab = 'shopping'" aria-label="購物清單">購物清單</button>
+          <button type="button" class="btn-secondary" @click="currentTab = 'info'" aria-label="航班飯店與安裝">航班・飯店</button>
+        </div>
+
+        <div class="card p-4 mb-3">
+          <h2 class="name">今日路線</h2>
+          <ol class="mt-2 list-decimal space-y-1 pl-6 text-base font-bold text-slate-900">
+            <li v-for="item in currentDay?.items || []" :key="'route-' + item.id">{{ item.name }}</li>
+          </ol>
+          <a v-if="routeUrl" :href="routeUrl" class="btn-nav mt-3" aria-label="開啟今日路線">開啟今日路線</a>
         </div>
 
         <p class="text-base font-bold text-slate-800 mb-3">叫車前請先安裝 Uber、登入，並綁好付款方式。</p>
 
-        <div class="relative pl-8 space-y-4">
-          <div class="absolute left-[15px] top-3 bottom-5 w-1 bg-wabi-border"></div>
+        <div class="mb-3 flex flex-wrap gap-x-4 gap-y-2 text-base font-bold text-slate-800">
+          <span><i class="mr-1 inline-block h-3 w-3 rounded-sm bg-[#2563EB]"></i>交通・航班</span>
+          <span><i class="mr-1 inline-block h-3 w-3 rounded-sm bg-[#15803D]"></i>景點</span>
+          <span><i class="mr-1 inline-block h-3 w-3 rounded-sm bg-[#C2410C]"></i>美食</span>
+          <span><i class="mr-1 inline-block h-3 w-3 rounded-sm bg-[#7E22CE]"></i>住宿</span>
+        </div>
 
+        <div class="space-y-3">
           <day-card
             v-for="(item, idx) in (currentDay?.items || [])"
             :key="item.id"
             :item="item"
             :show-transit="idx > 0"
+            :status="stopStatus(item)"
             @navigate="openSmartMap"
             @copy="copyText"
             @edit="openEditModal"
             @show-driver="openDriverCard"
+            @show-staff="openStaffCard"
+            @show-credit="openPhotoCredit"
           ></day-card>
         </div>
       </section>
 
       <section v-show="currentTab === 'info'" class="space-y-4">
+        <button type="button" class="btn-secondary" @click="currentTab = 'schedule'" aria-label="回到行程">回到行程</button>
+        <div class="card p-4">
+          <h2 class="name">備份</h2>
+          <p class="mt-2 text-base leading-relaxed text-slate-800">可以把記帳、採購、入境 QR Code、家人電話和字體設定存成一個檔案。入境 QR Code 也請另外截一張圖，比較保險。</p>
+          <button type="button" class="btn-nav mt-3" @click="exportBackup" aria-label="匯出備份">匯出備份</button>
+          <label class="btn-secondary mt-2 cursor-pointer">
+            匯入備份
+            <input type="file" accept="application/json,.json" class="hidden" @change="importBackup" />
+          </label>
+        </div>
+        <div class="card p-4">
+          <h2 class="name">照片來源</h2>
+          <p class="mt-2 text-base text-slate-800">只有對得到確切地點的照片才放。沒有照片的站，用顏色圖示代替。</p>
+          <ul class="mt-3 space-y-3">
+            <li v-for="photo in photoList" :key="photo.sourceUrl" class="text-base text-slate-800">
+              <p class="font-black text-slate-900">{{ photo.title }}</p>
+              <p>{{ photo.author }}／{{ photo.licence }}</p>
+              <a :href="photo.sourceUrl" class="font-bold text-wabi-red underline" target="_blank" rel="noopener">查看原圖</a>
+            </li>
+          </ul>
+        </div>
         <div id="install-help" class="card p-4">
           <h2 class="name">加到主畫面</h2>
-          <p class="text-base text-slate-800 mt-2 leading-relaxed">加好之後，手機會多一個「日本孝親行」。沒有網路時，先打開過一次的行程、日語卡、緊急電話還是看得到。</p>
+          <p class="text-base text-slate-800 mt-2 leading-relaxed">加好之後，手機會多一個「日本深度旅遊」。沒有網路時，先打開過一次的行程、日語卡、緊急電話還是看得到。</p>
           <button v-if="canInstall" type="button" class="btn-nav mt-3" @click="promptInstall" aria-label="安裝到手機">安裝到手機</button>
 
           <h3 class="text-lg font-black text-slate-900 mt-4">iPhone（用 Safari）</h3>
@@ -183,7 +187,7 @@
             <li>點畫面下方的分享按鈕（一個方框，上面有箭頭）。</li>
             <li>往下滑，點「加入主畫面」。</li>
             <li>右上角點「加入」。</li>
-            <li>回到手機桌面，就會看到「日本孝親行」。</li>
+            <li>回到手機桌面，就會看到「日本深度旅遊」。</li>
           </ol>
 
           <h3 class="text-lg font-black text-slate-900 mt-4">Android（用 Chrome）</h3>
@@ -192,7 +196,7 @@
             <li>點右上角三個點。</li>
             <li>點「安裝應用程式」或「加到主畫面」。</li>
             <li>點「安裝」或「新增」。</li>
-            <li>桌面會出現「日本孝親行」。</li>
+            <li>桌面會出現「日本深度旅遊」。</li>
           </ol>
         </div>
 
@@ -207,24 +211,6 @@
           </button>
         </div>
 
-        <div class="card p-4">
-          <h2 class="name">長輩手指日語卡</h2>
-          <p class="text-base font-bold text-slate-800 mt-1">點一下就放大，也可以聽發音。</p>
-          <div class="grid grid-cols-1 gap-2 mt-3">
-            <button
-              v-for="ph in quickPhrases"
-              :key="ph.jp"
-              type="button"
-              @click="openPhraseModal(ph)"
-              class="min-h-[64px] p-3 bg-white border-2 border-wabi-border rounded-xl text-left"
-              :aria-label="'播放日語：' + ph.zh"
-            >
-              <p class="text-lg font-black text-slate-900">{{ ph.zh }}</p>
-              <p class="text-base font-bold text-slate-800 mt-1">{{ ph.jp }}</p>
-            </button>
-          </div>
-        </div>
-
         <div class="dark-card rounded-2xl p-4 bg-slate-900 text-white">
           <h2 class="name">入境與退稅 QR Code</h2>
           <p class="text-base font-bold text-white mt-1">Visit Japan Web／護照截圖存檔</p>
@@ -232,35 +218,11 @@
             <span>{{ vjwQr ? '更換截圖' : '上傳截圖' }}</span>
             <input type="file" accept="image/*" @change="handleVjwUpload" class="hidden" />
           </label>
-          <div v-if="vjwQr" @click="showFullScreenQr = true" class="bg-white rounded-xl p-3 mt-3 cursor-pointer" role="button" aria-label="放大 QR Code">
+          <button v-if="vjwQr" type="button" class="btn-nav mt-3" @click="showFullScreenQr = true" aria-label="出示給店家">出示給店家</button>
+          <div v-if="vjwQr" class="bg-white rounded-xl p-3 mt-3">
             <img :src="vjwQr" alt="入境 QR Code" class="max-h-48 mx-auto object-contain" />
-            <p class="text-base font-black text-slate-900 text-center mt-2">點一下放大，給海關或免稅櫃檯看</p>
           </div>
           <p v-else class="text-base font-bold text-white mt-3">還沒有上傳。截圖存進來之後，沒有網路也能打開。</p>
-        </div>
-
-        <div class="card p-4">
-          <div class="flex items-start justify-between gap-3">
-            <h2 class="name">日幣換算</h2>
-            <button type="button" @click="fetchLiveRates" :disabled="isRateLoading" class="shrink-0 min-h-[48px] px-3 rounded-xl border-2 border-wabi-red text-wabi-red font-black text-base" aria-label="更新匯率">
-              {{ isRateLoading ? '更新中' : '更新匯率' }}
-            </button>
-          </div>
-          <label class="block mt-3 text-base font-bold text-slate-800" for="jpy-input">輸入日幣金額</label>
-          <input id="jpy-input" v-model.number="inputJpyAmount" type="number" inputmode="numeric" class="field mt-1 font-black" />
-          <p class="mt-3 text-base font-bold text-slate-800">換算約合台幣</p>
-          <p class="text-[1.6rem] font-black text-wabi-red">NT$ {{ convertedTWD.toLocaleString() }}</p>
-          <p class="mt-2 text-base font-bold text-slate-800">更新時間：{{ rateUpdatedLabel }}</p>
-          <p class="text-base font-bold text-slate-800">1 日圓 ≈ {{ currentJpyRate }} 台幣</p>
-          <p class="mt-3 text-base font-black text-slate-900">找零錢可以這樣看：</p>
-          <ul class="mt-1 space-y-1 text-base font-bold text-slate-800">
-            <li>1円：鋁製，很輕</li>
-            <li>5円：黃銅，中間有孔</li>
-            <li>10円：青銅，褐色</li>
-            <li>50円：銀色，中間有孔</li>
-            <li>100円：最常用</li>
-            <li>500円：最大顆</li>
-          </ul>
         </div>
 
         <div class="card p-4">
@@ -290,28 +252,65 @@
           </div>
         </div>
 
+      </section>
+
+      <section v-show="currentTab === 'phrases'" class="space-y-4">
+        <div class="card p-4">
+          <h2 class="name">長輩手指日語卡</h2>
+          <p class="text-base font-bold text-slate-800 mt-1">點一下就放大，也可以聽發音。</p>
+          <div class="grid grid-cols-1 gap-2 mt-3">
+            <button
+              v-for="ph in quickPhrases"
+              :key="ph.jp"
+              type="button"
+              @click="openPhraseModal(ph)"
+              class="min-h-[64px] p-3 bg-white border-2 border-wabi-border rounded-xl text-left"
+              :aria-label="'播放日語：' + ph.zh"
+            >
+              <p class="text-lg font-black text-slate-900">{{ ph.zh }}</p>
+              <p class="text-base font-bold text-slate-800 mt-1">{{ ph.jp }}</p>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section v-show="currentTab === 'emergency'" class="space-y-4">
+        <div class="card p-4">
+          <h2 class="name">家人緊急聯絡</h2>
+          <p class="text-base text-slate-800 mt-1">自己填姓名和電話。存下來之後，下面會變成可以直接撥打的紅按鈕。這裡不會預先填任何人。</p>
+          <label class="block mt-3 text-base font-bold text-slate-800">姓名（可以空白）
+            <input v-model="familyForm.name" type="text" class="field mt-1" autocomplete="name" />
+          </label>
+          <label class="block mt-3 text-base font-bold text-slate-800">電話
+            <input v-model="familyForm.phone" type="tel" class="field mt-1" autocomplete="tel" />
+          </label>
+          <button type="button" class="btn-nav mt-3" @click="saveFamilyContact" aria-label="儲存家人電話">儲存這支電話</button>
+          <div v-if="familyContacts.length === 0" class="mt-3 text-base font-bold text-slate-800">還沒有存任何家人電話。</div>
+          <div v-for="(person, fIdx) in familyContacts" :key="person.id" class="mt-3 border-2 border-wabi-border rounded-xl p-3">
+            <p v-if="person.name" class="text-lg font-black text-slate-900">{{ person.name }}</p>
+            <a :href="'tel:' + person.phone" class="btn-call mt-2" :aria-label="'打電話 ' + person.phone">{{ person.phone }}</a>
+            <button type="button" class="btn-secondary mt-2" @click="deleteFamilyContact(fIdx)" aria-label="刪除這支電話">刪除</button>
+          </div>
+        </div>
+
         <div class="card p-4">
           <h2 class="name">緊急電話</h2>
           <p class="text-base text-slate-800 mt-1">紅色按鈕可以直接撥打。</p>
-
           <div class="mt-4 border-2 border-wabi-border rounded-xl p-3">
             <p class="text-lg font-black text-slate-900">JNTO 日本觀光局 24小時多語言熱線</p>
             <p class="text-base text-slate-800 mt-1">事故、生病就醫、中文翻譯專用</p>
             <a href="tel:05038162720" class="btn-call mt-3" aria-label="撥打 050-3816-2720">050-3816-2720</a>
           </div>
-
           <div class="mt-3 border-2 border-wabi-border rounded-xl p-3">
             <p class="text-lg font-black text-slate-900">警察緊急報案</p>
             <p class="text-base text-slate-800 mt-1">漫遊若撥不通請加國碼</p>
             <a href="tel:110" class="btn-call mt-3" aria-label="撥打 110">110</a>
           </div>
-
           <div class="mt-3 border-2 border-wabi-border rounded-xl p-3">
             <p class="text-lg font-black text-slate-900">救護車／火警</p>
             <p class="text-base text-slate-800 mt-1">支援三方通話口譯</p>
             <a href="tel:119" class="btn-call mt-3" aria-label="撥打 119">119</a>
           </div>
-
           <div class="mt-3 border-2 border-wabi-border rounded-xl p-3">
             <p class="text-lg font-black text-slate-900">台灣駐日代表處 24小時急難救助</p>
             <p class="text-base text-slate-800 mt-2">東京代表處（關東）</p>
@@ -325,6 +324,7 @@
       </section>
 
       <section v-show="currentTab === 'shopping'" class="space-y-4">
+        <button type="button" class="btn-secondary" @click="currentTab = 'schedule'" aria-label="回到行程">回到行程</button>
         <div class="card p-4">
           <h2 class="name">當季伴手禮</h2>
           <p class="text-base font-bold text-slate-800 mt-1">點城市，再點「加入採購單」。</p>
@@ -378,7 +378,41 @@
         </div>
       </section>
 
-      <section v-show="currentTab === 'expenses'" class="space-y-4">
+      <section v-show="currentTab === 'rates'" class="space-y-4">
+        <div class="card p-4">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="name">日幣換算</h2>
+            <button type="button" @click="fetchLiveRates" :disabled="isRateLoading" class="shrink-0 min-h-[48px] px-3 rounded-xl border-2 border-wabi-red text-wabi-red font-black text-base" aria-label="更新匯率">
+              {{ isRateLoading ? '更新中' : '更新匯率' }}
+            </button>
+          </div>
+          <p class="mt-3 text-center text-[2.4rem] font-black text-slate-900 leading-none">{{ inputJpyAmount || 0 }}<span class="text-xl"> 円</span></p>
+          <p class="mt-2 text-center text-[1.6rem] font-black text-wabi-red">約 NT$ {{ convertedTWD.toLocaleString() }}</p>
+          <p class="mt-2 text-center text-base font-bold text-slate-800">更新時間：{{ rateUpdatedLabel }}</p>
+          <p class="text-center text-base font-bold text-slate-800">1 日圓 ≈ {{ currentJpyRate }} 台幣</p>
+          <div class="grid grid-cols-3 gap-2 mt-4">
+            <button v-for="n in [1,2,3,4,5,6,7,8,9]" :key="n" type="button" class="btn-secondary" @click="pressKey(n)" :aria-label="String(n)">{{ n }}</button>
+            <button type="button" class="btn-secondary" @click="clearAmount" aria-label="清除">清除</button>
+            <button type="button" class="btn-secondary" @click="pressKey(0)" aria-label="0">0</button>
+            <button type="button" class="btn-secondary" @click="backspaceAmount" aria-label="刪掉一位">刪一位</button>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-2">
+            <button type="button" class="btn-secondary" @click="setAmount(100)">100円</button>
+            <button type="button" class="btn-secondary" @click="setAmount(500)">500円</button>
+            <button type="button" class="btn-secondary" @click="setAmount(1000)">1000円</button>
+            <button type="button" class="btn-secondary" @click="setAmount(5000)">5000円</button>
+            <button type="button" class="btn-secondary" @click="setAmount(10000)">1萬円</button>
+          </div>
+          <p class="mt-3 text-base font-black text-slate-900">找零錢可以這樣看：</p>
+          <ul class="mt-1 space-y-1 text-base font-bold text-slate-800">
+            <li>1円：鋁製，很輕</li>
+            <li>5円：黃銅，中間有孔</li>
+            <li>10円：青銅，褐色</li>
+            <li>50円：銀色，中間有孔</li>
+            <li>100円：最常用</li>
+            <li>500円：最大顆</li>
+          </ul>
+        </div>
         <div class="rounded-2xl p-5 bg-slate-900 text-white">
           <p class="text-base font-bold text-white">花費合計</p>
           <p class="text-[2rem] font-black leading-tight mt-1">¥ {{ totalExpenseJPY.toLocaleString() }}</p>
@@ -404,13 +438,26 @@
       </section>
     </main>
 
-    <div
-      v-show="currentTab !== 'info'"
-      class="shrink-0 px-3 pt-2 bg-wabi-bg border-t-2 border-wabi-border"
-      style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom))"
-    >
+    <div v-show="showFab" class="shrink-0 px-3 pt-2 bg-wabi-bg border-t-2 border-wabi-border">
       <button type="button" class="btn-bar" @click="handleFabClick" :aria-label="fabLabel">{{ fabLabel }}</button>
     </div>
+    <nav class="shrink-0 bg-white border-t-2 border-wabi-border grid grid-cols-4" style="padding-bottom: max(0.15rem, env(safe-area-inset-bottom))" aria-label="主要功能">
+      <button
+        v-for="tab in bottomTabs"
+        :key="tab.id"
+        type="button"
+        @click="currentTab = tab.id"
+        :aria-label="tab.short"
+        :aria-current="currentTab === tab.id ? 'page' : 'false'"
+        class="min-h-[64px] flex flex-col items-center justify-center gap-0.5 text-base font-black"
+        :class="tab.id === 'emergency'
+          ? 'bg-[#B91C1C] text-white'
+          : (currentTab === tab.id ? 'bg-[#FBECEA] text-wabi-red' : 'text-slate-800')"
+      >
+        <app-icon :name="tab.icon"></app-icon>
+        <span>{{ tab.short }}</span>
+      </button>
+    </nav>
 
     <div v-if="driverCard" class="fixed inset-0 z-[70] bg-white text-black flex flex-col px-6 pt-10 pb-6" role="dialog" aria-modal="true" aria-label="給司機看">
       <p class="text-center font-black leading-snug" style="font-size:2.15rem">こちらまでお願いします</p>
@@ -429,13 +476,27 @@
       </div>
     </div>
 
-    <div v-if="showFullScreenQr" class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" @click="showFullScreenQr = false">
-      <div class="bg-white p-5 rounded-3xl max-w-sm w-full" @click.stop>
-        <h2 class="name">Visit Japan Web／護照查驗</h2>
-        <p class="text-base font-bold text-slate-800">請把螢幕調亮</p>
-        <img :src="vjwQr" alt="入境 QR Code" class="w-full object-contain mt-3" />
-        <button type="button" class="btn-secondary mt-3" @click="showFullScreenQr = false" aria-label="關閉">關閉</button>
+    <div v-if="photoCredit" class="fixed inset-0 z-[70] bg-black/70 flex items-end justify-center" @click="photoCredit = null">
+      <div class="w-full max-w-[480px] rounded-t-3xl bg-white p-5" @click.stop role="dialog" aria-label="照片來源">
+        <h2 class="name">{{ photoCredit.title }}</h2>
+        <p class="mt-2 text-base leading-relaxed text-slate-800">{{ photoCredit.note }}</p>
+        <p class="mt-2 text-base font-bold text-slate-900">{{ photoCredit.author }}／{{ photoCredit.licence }}</p>
+        <a :href="photoCredit.sourceUrl" class="mt-2 inline-block text-base font-bold text-wabi-red underline" target="_blank" rel="noopener">Wikimedia Commons 原圖</a>
+        <button type="button" class="btn-secondary mt-4" @click="photoCredit = null" aria-label="關閉">關閉</button>
       </div>
+    </div>
+
+    <div v-if="staffCard" class="fixed inset-0 z-[70] bg-white text-black flex flex-col px-6 pt-10 pb-6" role="dialog" aria-modal="true" aria-label="出示給店家">
+      <p class="text-center text-lg font-black">請把這張卡給店家看</p>
+      <p class="text-center font-black leading-none mt-8 break-all" style="font-size:3.2rem; letter-spacing:0.08em">{{ staffCard.code }}</p>
+      <p v-if="staffCard.name" class="text-center text-xl font-bold mt-6">{{ staffCard.name }}</p>
+      <button type="button" class="btn-secondary mt-auto" @click="staffCard = null" aria-label="關閉">關閉</button>
+    </div>
+
+    <div v-if="showFullScreenQr" class="fixed inset-0 z-[70] bg-white text-black flex flex-col px-6 pt-8 pb-6" role="dialog" aria-modal="true" aria-label="出示給店家">
+      <p class="text-center text-lg font-black">請把這個 QR Code 給海關或店員看</p>
+      <img :src="vjwQr" alt="入境 QR Code" class="w-full max-h-[60vh] object-contain mt-4 bg-white" />
+      <button type="button" class="btn-secondary mt-auto" @click="showFullScreenQr = false" aria-label="關閉">關閉</button>
     </div>
 
     <div v-if="showScheduleModal" class="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
@@ -517,9 +578,11 @@
         <label class="block text-base font-bold text-slate-800">項目名稱
           <input v-model="expenseForm.name" type="text" class="field mt-1 font-bold" placeholder="例如：計程車" />
         </label>
-        <label class="block text-base font-bold text-slate-800">金額（日圓）
+          <label class="block text-base font-bold text-slate-800">金額（日圓）
           <input v-model.number="expenseForm.amount" type="number" inputmode="numeric" class="field mt-1 font-black" />
         </label>
+        <p class="text-lg font-black text-wabi-red">約合台幣 NT$ {{ expenseTwd.toLocaleString() }}</p>
+        <p class="text-base font-bold text-slate-800">匯率時間：{{ rateUpdatedLabel }}</p>
         <div class="grid grid-cols-3 gap-2">
           <button type="button" class="btn-secondary" @click="addExpenseAmount(100)">+100</button>
           <button type="button" class="btn-secondary" @click="addExpenseAmount(500)">+500</button>

@@ -12,10 +12,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: false,
       manifestFilename: 'manifest.json',
-      includeAssets: ['icons/*.png', 'images/*.jpg', 'fonts/*.woff2'],
+      includeAssets: ['icons/*.png', 'images/stops/*.jpg', 'fonts/*.woff2'],
       manifest: {
-        name: '2026 日本長輩旅遊',
-        short_name: '日本孝親行',
+        name: '日本深度旅遊',
+        short_name: '日本深度旅遊',
         description: '2026年11月8日至16日，關西、南紀勝浦、京都、東京行程',
         lang: 'zh-TW',
         dir: 'ltr',
@@ -33,6 +33,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // 改名後換新的快取名稱，舊的離線檔案會被清掉
+        cacheId: 'japan-deep-travel-v2',
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp,woff2,ico,json}'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
