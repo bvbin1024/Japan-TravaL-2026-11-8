@@ -312,6 +312,29 @@ registerSW({
             }
           } catch (e) {}
         }
+
+        // 資料遷移：11/8 晚餐已搬到うめきたグリーンプレイス。
+        // 手機裡若還存著舊的這一站，只改地址、交通備註、電話、官網與地圖，不動時間與預約代號。
+        if (savedDays) {
+          try {
+            const seedDay = tripInfo.value.days.find(d => (d.items || []).some(i => i.id === 'd1-dinner'));
+            const seedStop = seedDay && seedDay.items.find(i => i.id === 'd1-dinner');
+            const day = seedDay && savedDays.find(d => d.dateStr === seedDay.dateStr);
+            const savedStop = day && Array.isArray(day.items) && day.items.find(i => i.id === 'd1-dinner');
+            const address = String(savedStop?.address || '');
+            if (seedStop && savedStop && !address.includes('大深町5-1')) {
+              savedStop.address = seedStop.address;
+              savedStop.notes = seedStop.notes;
+              savedStop.phone = seedStop.phone;
+              savedStop.phoneTel = seedStop.phoneTel;
+              savedStop.website = seedStop.website;
+              savedStop.mapQuery = seedStop.mapQuery;
+              savedStop.latitude = seedStop.latitude;
+              savedStop.longitude = seedStop.longitude;
+              localStorage.setItem('jp_trip_v2026_energy', JSON.stringify(savedDays));
+            }
+          } catch (e) {}
+        }
         const itineraryDays = ref(savedDays || tripInfo.value.days);
 
         const availableCities = ['全部', '大阪', '南紀勝浦', '京都', '天橋立', '東京'];
