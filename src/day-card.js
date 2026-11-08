@@ -94,6 +94,7 @@ export const DayCard = {
           </div>
           <a v-if="item.phone" :href="'tel:' + (item.phoneTel || item.phone)" class="btn-call mt-3" :aria-label="'打電話 ' + item.phone">📞 打電話 {{ item.phone }}</a>
           <p v-if="item.notes" class="mt-3 text-base leading-relaxed text-slate-800">{{ item.notes }}</p>
+          <a v-if="item.website" :href="item.website" class="btn-secondary mt-3" target="_blank" rel="noopener noreferrer" :aria-label="'開啟店家頁面 ' + item.website">店家頁面</a>
           <button v-if="photo" type="button" class="mt-2 text-base font-bold text-slate-700 underline" @click="$emit('show-credit', photo)">照片來源</button>
 
           <div class="mt-4 flex flex-col gap-2">
